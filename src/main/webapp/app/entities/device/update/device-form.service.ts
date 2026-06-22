@@ -69,7 +69,11 @@ export class DeviceFormService {
         validators: [Validators.required, Validators.maxLength(255)],
       }),
       ipAddress: new FormControl(deviceRawValue.ipAddress, {
-        validators: [Validators.required, Validators.maxLength(255)],
+        validators: [
+          Validators.required,
+          Validators.maxLength(255),
+          Validators.pattern('^((25[0-5]|2[0-4]\\d|[01]?\\d\\d?)\\.){3}(25[0-5]|2[0-4]\\d|[01]?\\d\\d?)$')
+        ],
       }),
       hostname: new FormControl(deviceRawValue.hostname, {
         validators: [Validators.maxLength(255)],

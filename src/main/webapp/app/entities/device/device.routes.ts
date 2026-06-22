@@ -8,7 +8,7 @@ const deviceRoute: Routes = [
   {
     path: '',
     loadComponent: () => import('./list/device').then(m => m.Device),
-    data: {},
+    data: { authorities: ['ROLE_USER', 'ROLE_ADMIN'] },
     canActivate: [UserRouteAccessService],
   },
   {
@@ -17,6 +17,7 @@ const deviceRoute: Routes = [
     resolve: {
       device: DeviceResolve,
     },
+    data: { authorities: ['ROLE_USER', 'ROLE_ADMIN'] },
     canActivate: [UserRouteAccessService],
   },
   {
@@ -25,6 +26,7 @@ const deviceRoute: Routes = [
     resolve: {
       device: DeviceResolve,
     },
+    data: { authorities: ['ROLE_ADMIN'] },
     canActivate: [UserRouteAccessService],
   },
   {
@@ -33,6 +35,7 @@ const deviceRoute: Routes = [
     resolve: {
       device: DeviceResolve,
     },
+    data: { authorities: ['ROLE_ADMIN'] },
     canActivate: [UserRouteAccessService],
   },
 ];

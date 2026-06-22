@@ -22,4 +22,6 @@ public interface DeviceRepository extends MongoRepository<Device, String> {
 
     @Query("{'id': ?0}")
     Optional<Device> findOneWithEagerRelationships(String id);
+
+    boolean existsByIpAddress(String ipAddress);
 }

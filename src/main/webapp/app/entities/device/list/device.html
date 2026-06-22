@@ -13,6 +13,7 @@
         data-cy="entityCreateButton"
         class="btn btn-primary jh-create-entity create-device"
         [routerLink]="['/device/new']"
+        *jhiHasAnyAuthority="'ROLE_ADMIN'"
       >
         <fa-icon icon="plus" />
         <span jhiTranslate="emsApp.device.home.createLabel">Thêm mới một Device</span>
@@ -131,7 +132,7 @@
                 <fa-icon class="p-1" icon="sort" />
               </div>
             </th>
-            <th scope="col" jhiSortBy="credential.name">
+            <th scope="col" jhiSortBy="credential.id">
               <div class="d-flex">
                 <span jhiTranslate="emsApp.device.credential">Credential</span>
                 <fa-icon class="p-1" icon="sort" />
@@ -184,7 +185,7 @@
               <td>
                 @if (device.credential) {
                   <div>
-                    <a [routerLink]="['/credential', device.credential.id, 'view']">{{ device.credential.name }}</a>
+                    <a [routerLink]="['/credential', device.credential.id, 'view']">{{ device.credential.id }}</a>
                   </div>
                 }
               </td>
@@ -195,12 +196,12 @@
                     <span class="d-none d-md-inline" jhiTranslate="entity.action.view">Xem</span>
                   </a>
 
-                  <a [routerLink]="['/device', device.id, 'edit']" class="btn btn-primary btn-sm" data-cy="entityEditButton">
+                  <a [routerLink]="['/device', device.id, 'edit']" class="btn btn-primary btn-sm" data-cy="entityEditButton" *jhiHasAnyAuthority="'ROLE_ADMIN'">
                     <fa-icon icon="pencil-alt" />
                     <span class="d-none d-md-inline" jhiTranslate="entity.action.edit">Sửa</span>
                   </a>
 
-                  <button type="submit" (click)="delete(device)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton">
+                  <button type="submit" (click)="delete(device)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton" *jhiHasAnyAuthority="'ROLE_ADMIN'">
                     <fa-icon icon="times" />
                     <span class="d-none d-md-inline" jhiTranslate="entity.action.delete">Xóa</span>
                   </button>

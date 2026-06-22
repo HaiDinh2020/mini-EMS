@@ -1,10 +1,12 @@
 package com.vht.ems.service.impl;
 
 import com.vht.ems.domain.Device;
+import com.vht.ems.domain.enumeration.DeviceStatus;
 import com.vht.ems.repository.DeviceRepository;
 import com.vht.ems.service.DeviceService;
 import com.vht.ems.service.dto.DeviceDTO;
 import com.vht.ems.service.mapper.DeviceMapper;
+import com.vht.ems.web.rest.errors.BadRequestAlertException;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,6 +34,21 @@ public class DeviceServiceImpl implements DeviceService {
     @Override
     public DeviceDTO save(DeviceDTO deviceDTO) {
         LOG.debug("Request to save Device : {}", deviceDTO);
+        
+        if (deviceRepository.existsByIpAddress(deviceDTO.getIpAddress())) {
+            throw new BadRequestAlertException("Device with this IP address already exists", "device", "ipaddressexists");
+        }
+
+        if (deviceDTO.getStatus() == null) {
+            deviceDTO.setStatus(DeviceStatus.UNKNOWN);
+        }
+        if (deviceDTO.getMonitoringEnabled() == null) {
+            deviceDTO.setMonitoringEnabled(true);
+        }
+        if (deviceDTO.getSshPort() == null) {
+            deviceDTO.setSshPort(22);
+        }
+
         Device device = deviceMapper.toEntity(deviceDTO);
         device = deviceRepository.save(device);
         return deviceMapper.toDto(device);

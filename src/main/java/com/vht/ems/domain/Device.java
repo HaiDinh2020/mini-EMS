@@ -31,6 +31,7 @@ public class Device implements Serializable {
 
     @NotNull
     @Size(max = 255)
+    @Pattern(regexp = "^((25[0-5]|2[0-4]\\d|[01]?\\d\\d?)\\.){3}(25[0-5]|2[0-4]\\d|[01]?\\d\\d?)$")
     @Field("ip_address")
     private String ipAddress;
 

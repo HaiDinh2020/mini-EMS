@@ -47,8 +47,8 @@ class DeviceResourceIT {
     private static final String DEFAULT_NAME = "AAAAAAAAAA";
     private static final String UPDATED_NAME = "BBBBBBBBBB";
 
-    private static final String DEFAULT_IP_ADDRESS = "AAAAAAAAAA";
-    private static final String UPDATED_IP_ADDRESS = "BBBBBBBBBB";
+    private static final String DEFAULT_IP_ADDRESS = "192.168.1.1";
+    private static final String UPDATED_IP_ADDRESS = "192.168.1.2";
 
     private static final String DEFAULT_HOSTNAME = "AAAAAAAAAA";
     private static final String UPDATED_HOSTNAME = "BBBBBBBBBB";
@@ -205,6 +205,63 @@ class DeviceResourceIT {
 
         // Validate the Device in the database
         assertSameRepositoryCount(databaseSizeBeforeCreate);
+    }
+
+    @Test
+    void createDeviceWithInvalidIp() throws Exception {
+        long databaseSizeBeforeCreate = getRepositoryCount();
+        device.setIpAddress("999.999.999.999");
+        DeviceDTO deviceDTO = deviceMapper.toDto(device);
+
+        restDeviceMockMvc
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(deviceDTO)))
+            .andExpect(status().isBadRequest());
+
+        assertSameRepositoryCount(databaseSizeBeforeCreate);
+    }
+
+    @Test
+    void createDeviceWithDuplicateIp() throws Exception {
+        insertedDevice = deviceRepository.save(device);
+        long databaseSizeBeforeCreate = getRepositoryCount();
+
+        Device newDevice = createEntity();
+        newDevice.setIpAddress(device.getIpAddress());
+        DeviceDTO deviceDTO = deviceMapper.toDto(newDevice);
+
+        restDeviceMockMvc
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(deviceDTO)))
+            .andExpect(status().isBadRequest());
+
+        assertSameRepositoryCount(databaseSizeBeforeCreate);
+    }
+
+    @Test
+    void createDeviceWithDefaultValues() throws Exception {
+        long databaseSizeBeforeCreate = getRepositoryCount();
+        Device newDevice = createEntity();
+        newDevice.setIpAddress("10.0.0.1");
+        newDevice.setStatus(null);
+        newDevice.setMonitoringEnabled(null);
+        newDevice.setSshPort(null);
+        DeviceDTO deviceDTO = deviceMapper.toDto(newDevice);
+
+        var returnedDeviceDTO = om.readValue(
+            restDeviceMockMvc
+                .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(deviceDTO)))
+                .andExpect(status().isCreated())
+                .andReturn()
+                .getResponse()
+                .getContentAsString(),
+            DeviceDTO.class
+        );
+
+        assertThat(returnedDeviceDTO.getStatus()).isEqualTo(DeviceStatus.UNKNOWN);
+        assertThat(returnedDeviceDTO.getMonitoringEnabled()).isTrue();
+        assertThat(returnedDeviceDTO.getSshPort()).isEqualTo(22);
+
+        assertIncrementedRepositoryCount(databaseSizeBeforeCreate);
+        insertedDevice = deviceMapper.toEntity(returnedDeviceDTO);
     }
 
     @Test
