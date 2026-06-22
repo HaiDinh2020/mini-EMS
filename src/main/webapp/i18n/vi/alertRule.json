@@ -1,0 +1,27 @@
+{
+  "emsApp": {
+    "alertRule": {
+      "home": {
+        "title": "Alert Rules",
+        "refreshListLabel": "Refresh list",
+        "createLabel": "Thêm mới một Alert Rule",
+        "createOrEditLabel": "Thêm mới hoặc cập nhật Alert Rule",
+        "notFound": "No Alert Rules found"
+      },
+      "created": "Một Alert Rule mới được tạo với định danh {{ param }}",
+      "updated": "Một Alert Rule cập nhật với định danh {{ param }}",
+      "deleted": "Một Alert Rule đã xóa với định danh {{ param }}",
+      "delete": {
+        "question": "Bạn có chắc là muốn xóa Alert Rule {{ id }}?"
+      },
+      "detail": {
+        "title": "Alert Rule"
+      },
+      "id": "ID",
+      "metricType": "Metric Type",
+      "thresholdWarning": "Threshold Warning",
+      "thresholdCritical": "Threshold Critical",
+      "enabled": "Enabled"
+    }
+  }
+}

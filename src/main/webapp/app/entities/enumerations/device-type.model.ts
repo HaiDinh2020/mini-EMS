@@ -1,0 +1,21 @@
+export enum DeviceType {
+  SERVER = 'SERVER',
+
+  ROUTER = 'ROUTER',
+
+  SWITCH = 'SWITCH',
+
+  FIREWALL = 'FIREWALL',
+
+  GNODEB = 'GNODEB',
+
+  AMF = 'AMF',
+
+  SMF = 'SMF',
+
+  UPF = 'UPF',
+
+  UDM = 'UDM',
+
+  OTHER = 'OTHER',
+}

@@ -1,0 +1,37 @@
+{
+  "monitoringApp": {
+    "device": {
+      "home": {
+        "title": "Devices",
+        "refreshListLabel": "Refresh list",
+        "createLabel": "Create a new Device",
+        "createOrEditLabel": "Create or edit a Device",
+        "notFound": "No Devices found"
+      },
+      "created": "A new Device is created with identifier {{ param }}",
+      "updated": "A Device is updated with identifier {{ param }}",
+      "deleted": "A Device is deleted with identifier {{ param }}",
+      "delete": {
+        "question": "Are you sure you want to delete Device {{ id }}?"
+      },
+      "detail": {
+        "title": "Device"
+      },
+      "id": "ID",
+      "name": "Name",
+      "ipAddress": "Ip Address",
+      "hostname": "Hostname",
+      "deviceType": "Device Type",
+      "vendor": "Vendor",
+      "model": "Model",
+      "sshPort": "Ssh Port",
+      "sshUsername": "Ssh Username",
+      "location": "Location",
+      "status": "Status",
+      "lastCheckedAt": "Last Checked At",
+      "monitoringEnabled": "Monitoring Enabled",
+      "description": "Description",
+      "credential": "Credential"
+    }
+  }
+}

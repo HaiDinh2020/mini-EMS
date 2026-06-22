@@ -1,0 +1,60 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    @if (topologyLink(); as topologyLinkRef) {
+      <div>
+        <h2 data-cy="topologyLinkDetailsHeading"><span jhiTranslate="emsApp.topologyLink.detail.title">Topology Link</span></h2>
+
+        <hr />
+
+        <jhi-alert-error />
+
+        <jhi-alert />
+
+        <dl class="row-md jh-entity-details">
+          <dt><span jhiTranslate="global.field.id">ID</span></dt>
+          <dd>
+            <span>{{ topologyLinkRef.id }}</span>
+          </dd>
+          <dt><span jhiTranslate="emsApp.topologyLink.linkType">Link Type</span></dt>
+          <dd>
+            <span>{{ topologyLinkRef.linkType }}</span>
+          </dd>
+          <dt><span jhiTranslate="emsApp.topologyLink.bandwidthMbps">Bandwidth Mbps</span></dt>
+          <dd>
+            <span>{{ topologyLinkRef.bandwidthMbps }}</span>
+          </dd>
+          <dt><span jhiTranslate="emsApp.topologyLink.status">Status</span></dt>
+          <dd>
+            <span [jhiTranslate]="'emsApp.LinkStatus.' + (topologyLinkRef.status ?? 'null')">{{
+              { null: '', UP: 'UP', DOWN: 'DOWN', DEGRADED: 'DEGRADED' }[topologyLinkRef.status ?? 'null']
+            }}</span>
+          </dd>
+          <dt><span jhiTranslate="emsApp.topologyLink.sourceDevice">Source Device</span></dt>
+          <dd>
+            @if (topologyLink()!.sourceDevice) {
+              <div>
+                <a [routerLink]="['/device', topologyLink()!.sourceDevice?.id, 'view']">{{ topologyLinkRef.sourceDevice?.name }}</a>
+              </div>
+            }
+          </dd>
+          <dt><span jhiTranslate="emsApp.topologyLink.targetDevice">Target Device</span></dt>
+          <dd>
+            @if (topologyLink()!.targetDevice) {
+              <div>
+                <a [routerLink]="['/device', topologyLink()!.targetDevice?.id, 'view']">{{ topologyLinkRef.targetDevice?.name }}</a>
+              </div>
+            }
+          </dd>
+        </dl>
+
+        <button type="submit" (click)="previousState()" class="btn btn-info" data-cy="entityDetailsBackButton">
+          <fa-icon icon="arrow-left" />&nbsp;<span jhiTranslate="entity.action.back">Quay lại</span>
+        </button>
+
+        <button type="button" [routerLink]="['/topology-link', topologyLinkRef.id, 'edit']" class="btn btn-primary">
+          <fa-icon icon="pencil-alt" />&nbsp;<span jhiTranslate="entity.action.edit">Sửa</span>
+        </button>
+      </div>
+    }
+  </div>
+</div>

@@ -1,0 +1,165 @@
+enum DeviceType {
+SERVER,
+ROUTER,
+SWITCH,
+FIREWALL,
+GNODEB,
+AMF,
+SMF,
+UPF,
+UDM,
+OTHER
+}
+
+enum DeviceStatus {
+ONLINE,
+OFFLINE,
+UNKNOWN,
+WARNING,
+CRITICAL
+}
+
+enum AuthType {
+PASSWORD,
+SSH_KEY
+}
+
+enum MetricType {
+CPU,
+RAM,
+DISK,
+PING_LATENCY,
+AVAILABILITY
+}
+
+enum Severity {
+WARNING,
+CRITICAL
+}
+
+enum AlertStatus {
+OPEN,
+ACKNOWLEDGED,
+RESOLVED
+}
+
+enum LinkStatus {
+UP,
+DOWN,
+DEGRADED
+}
+
+entity Device {
+name String required maxlength(255),
+ipAddress String required maxlength(255),
+hostname String maxlength(255),
+deviceType DeviceType required,
+vendor String maxlength(255),
+model String maxlength(255),
+sshPort Integer,
+sshUsername String maxlength(255),
+location String maxlength(500),
+status DeviceStatus required,
+lastCheckedAt Instant,
+monitoringEnabled Boolean required,
+description TextBlob
+}
+
+entity Credential {
+name String required maxlength(255),
+authType AuthType required,
+username String required maxlength(255),
+encryptedSecret String required
+}
+
+entity MetricSample {
+cpuUsage Double,
+ramUsage Double,
+diskUsage Double,
+pingLatencyMs Double,
+collectedAt Instant required
+}
+
+entity AlertRule {
+metricType MetricType required,
+thresholdWarning Double required,
+thresholdCritical Double required,
+enabled Boolean required
+}
+
+entity AlertEvent {
+metricType MetricType required,
+value Double required,
+severity Severity required,
+message String required maxlength(1000),
+triggeredAt Instant required,
+resolvedAt Instant,
+status AlertStatus required
+}
+
+entity TopologyLink {
+linkType String maxlength(255),
+bandwidthMbps Double,
+status LinkStatus required
+}
+
+entity AuditLog {
+username String required maxlength(255),
+action String required maxlength(255),
+entityName String required maxlength(255),
+entityId String required,
+detail TextBlob,
+timestamp Instant required
+}
+
+relationship ManyToOne {
+
+Device{credential(name)}
+to Credential
+
+MetricSample{device(name)}
+to Device
+
+AlertEvent{device(name)}
+to Device
+
+AlertEvent{rule(metricType)}
+to AlertRule
+
+TopologyLink{sourceDevice(name)}
+to Device
+
+TopologyLink{targetDevice(name)}
+to Device
+}
+
+service Device with serviceImpl
+service Credential with serviceImpl
+service MetricSample with serviceImpl
+service AlertRule with serviceImpl
+service AlertEvent with serviceImpl
+service TopologyLink with serviceImpl
+service AuditLog with serviceImpl
+
+dto Device with mapstruct
+dto Credential with mapstruct
+dto MetricSample with mapstruct
+dto AlertRule with mapstruct
+dto AlertEvent with mapstruct
+dto TopologyLink with mapstruct
+dto AuditLog with mapstruct
+
+paginate Device with pagination
+paginate Credential with pagination
+paginate MetricSample with pagination
+paginate AlertRule with pagination
+paginate AlertEvent with pagination
+paginate TopologyLink with pagination
+paginate AuditLog with pagination
+
+filter Device
+filter Credential
+filter AlertRule
+filter AlertEvent
+filter TopologyLink
+filter AuditLog

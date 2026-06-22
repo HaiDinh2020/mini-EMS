@@ -1,0 +1,82 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    @if (alertEvent(); as alertEventRef) {
+      <div>
+        <h2 data-cy="alertEventDetailsHeading"><span jhiTranslate="emsApp.alertEvent.detail.title">Alert Event</span></h2>
+
+        <hr />
+
+        <jhi-alert-error />
+
+        <jhi-alert />
+
+        <dl class="row-md jh-entity-details">
+          <dt><span jhiTranslate="global.field.id">ID</span></dt>
+          <dd>
+            <span>{{ alertEventRef.id }}</span>
+          </dd>
+          <dt><span jhiTranslate="emsApp.alertEvent.metricType">Metric Type</span></dt>
+          <dd>
+            <span [jhiTranslate]="'emsApp.MetricType.' + (alertEventRef.metricType ?? 'null')">{{
+              { null: '', CPU: 'CPU', RAM: 'RAM', DISK: 'DISK', PING_LATENCY: 'PING_LATENCY', AVAILABILITY: 'AVAILABILITY' }[
+                alertEventRef.metricType ?? 'null'
+              ]
+            }}</span>
+          </dd>
+          <dt><span jhiTranslate="emsApp.alertEvent.value">Value</span></dt>
+          <dd>
+            <span>{{ alertEventRef.value }}</span>
+          </dd>
+          <dt><span jhiTranslate="emsApp.alertEvent.severity">Severity</span></dt>
+          <dd>
+            <span [jhiTranslate]="'emsApp.Severity.' + (alertEventRef.severity ?? 'null')">{{
+              { null: '', WARNING: 'WARNING', CRITICAL: 'CRITICAL' }[alertEventRef.severity ?? 'null']
+            }}</span>
+          </dd>
+          <dt><span jhiTranslate="emsApp.alertEvent.message">Message</span></dt>
+          <dd>
+            <span>{{ alertEventRef.message }}</span>
+          </dd>
+          <dt><span jhiTranslate="emsApp.alertEvent.triggeredAt">Triggered At</span></dt>
+          <dd>
+            <span>{{ alertEventRef.triggeredAt | formatMediumDatetime }}</span>
+          </dd>
+          <dt><span jhiTranslate="emsApp.alertEvent.resolvedAt">Resolved At</span></dt>
+          <dd>
+            <span>{{ alertEventRef.resolvedAt | formatMediumDatetime }}</span>
+          </dd>
+          <dt><span jhiTranslate="emsApp.alertEvent.status">Status</span></dt>
+          <dd>
+            <span [jhiTranslate]="'emsApp.AlertStatus.' + (alertEventRef.status ?? 'null')">{{
+              { null: '', OPEN: 'OPEN', ACKNOWLEDGED: 'ACKNOWLEDGED', RESOLVED: 'RESOLVED' }[alertEventRef.status ?? 'null']
+            }}</span>
+          </dd>
+          <dt><span jhiTranslate="emsApp.alertEvent.device">Device</span></dt>
+          <dd>
+            @if (alertEvent()!.device) {
+              <div>
+                <a [routerLink]="['/device', alertEvent()!.device?.id, 'view']">{{ alertEventRef.device?.name }}</a>
+              </div>
+            }
+          </dd>
+          <dt><span jhiTranslate="emsApp.alertEvent.rule">Rule</span></dt>
+          <dd>
+            @if (alertEvent()!.rule) {
+              <div>
+                <a [routerLink]="['/alert-rule', alertEvent()!.rule?.id, 'view']">{{ alertEventRef.rule?.metricType }}</a>
+              </div>
+            }
+          </dd>
+        </dl>
+
+        <button type="submit" (click)="previousState()" class="btn btn-info" data-cy="entityDetailsBackButton">
+          <fa-icon icon="arrow-left" />&nbsp;<span jhiTranslate="entity.action.back">Quay lại</span>
+        </button>
+
+        <button type="button" [routerLink]="['/alert-event', alertEventRef.id, 'edit']" class="btn btn-primary">
+          <fa-icon icon="pencil-alt" />&nbsp;<span jhiTranslate="entity.action.edit">Sửa</span>
+        </button>
+      </div>
+    }
+  </div>
+</div>

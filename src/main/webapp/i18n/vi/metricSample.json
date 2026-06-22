@@ -1,0 +1,29 @@
+{
+  "emsApp": {
+    "metricSample": {
+      "home": {
+        "title": "Metric Samples",
+        "refreshListLabel": "Refresh list",
+        "createLabel": "Thêm mới một Metric Sample",
+        "createOrEditLabel": "Thêm mới hoặc cập nhật Metric Sample",
+        "notFound": "No Metric Samples found"
+      },
+      "created": "Một Metric Sample mới được tạo với định danh {{ param }}",
+      "updated": "Một Metric Sample cập nhật với định danh {{ param }}",
+      "deleted": "Một Metric Sample đã xóa với định danh {{ param }}",
+      "delete": {
+        "question": "Bạn có chắc là muốn xóa Metric Sample {{ id }}?"
+      },
+      "detail": {
+        "title": "Metric Sample"
+      },
+      "id": "ID",
+      "cpuUsage": "Cpu Usage",
+      "ramUsage": "Ram Usage",
+      "diskUsage": "Disk Usage",
+      "pingLatencyMs": "Ping Latency Ms",
+      "collectedAt": "Collected At",
+      "device": "Device"
+    }
+  }
+}

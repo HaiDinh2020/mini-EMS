@@ -1,0 +1,187 @@
+<div>
+  <h2 id="page-heading" data-cy="AlertEventHeading">
+    <span jhiTranslate="emsApp.alertEvent.home.title">Alert Events</span>
+
+    <div class="d-flex justify-content-end">
+      <button class="btn btn-info me-2" (click)="load()" [disabled]="isLoading()">
+        <fa-icon icon="sync" [animation]="isLoading() ? 'spin' : undefined" />
+        <span jhiTranslate="emsApp.alertEvent.home.refreshListLabel">Refresh list</span>
+      </button>
+
+      <button
+        id="jh-create-entity"
+        data-cy="entityCreateButton"
+        class="btn btn-primary jh-create-entity create-alert-event"
+        [routerLink]="['/alert-event/new']"
+      >
+        <fa-icon icon="plus" />
+        <span jhiTranslate="emsApp.alertEvent.home.createLabel">Thêm mới một Alert Event</span>
+      </button>
+    </div>
+  </h2>
+
+  <jhi-alert-error />
+
+  <jhi-alert />
+
+  @if (alertEvents().length === 0) {
+    <div class="alert alert-warning" id="no-result">
+      <span jhiTranslate="emsApp.alertEvent.home.notFound">No Alert Events found</span>
+    </div>
+  } @else {
+    <div class="table-responsive table-entities" id="entities">
+      <table class="table table-striped" aria-describedby="page-heading">
+        <thead>
+          <tr jhiSort [(sortState)]="sortState" (sortChange)="navigateToWithComponentValues($event)">
+            <th scope="col" jhiSortBy="id">
+              <div class="d-flex">
+                <span jhiTranslate="global.field.id">ID</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="metricType">
+              <div class="d-flex">
+                <span jhiTranslate="emsApp.alertEvent.metricType">Metric Type</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="value">
+              <div class="d-flex">
+                <span jhiTranslate="emsApp.alertEvent.value">Value</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="severity">
+              <div class="d-flex">
+                <span jhiTranslate="emsApp.alertEvent.severity">Severity</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="message">
+              <div class="d-flex">
+                <span jhiTranslate="emsApp.alertEvent.message">Message</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="triggeredAt">
+              <div class="d-flex">
+                <span jhiTranslate="emsApp.alertEvent.triggeredAt">Triggered At</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="resolvedAt">
+              <div class="d-flex">
+                <span jhiTranslate="emsApp.alertEvent.resolvedAt">Resolved At</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="status">
+              <div class="d-flex">
+                <span jhiTranslate="emsApp.alertEvent.status">Status</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="device.name">
+              <div class="d-flex">
+                <span jhiTranslate="emsApp.alertEvent.device">Device</span>
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="rule.metricType">
+              <div class="d-flex">
+                <span jhiTranslate="emsApp.alertEvent.rule">Rule</span>
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col"></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (alertEvent of alertEvents(); track trackId(alertEvent)) {
+            <tr data-cy="entityTable">
+              <td>
+                <a [routerLink]="['/alert-event', alertEvent.id, 'view']">{{ alertEvent.id }}</a>
+              </td>
+              <td [jhiTranslate]="'emsApp.MetricType.' + (alertEvent.metricType ?? 'null')">
+                {{
+                  { null: '', CPU: 'CPU', RAM: 'RAM', DISK: 'DISK', PING_LATENCY: 'PING_LATENCY', AVAILABILITY: 'AVAILABILITY' }[
+                    alertEvent.metricType ?? 'null'
+                  ]
+                }}
+              </td>
+              <td>{{ alertEvent.value }}</td>
+              <td [jhiTranslate]="'emsApp.Severity.' + (alertEvent.severity ?? 'null')">
+                {{ { null: '', WARNING: 'WARNING', CRITICAL: 'CRITICAL' }[alertEvent.severity ?? 'null'] }}
+              </td>
+              <td>{{ alertEvent.message }}</td>
+              <td>{{ alertEvent.triggeredAt | formatMediumDatetime }}</td>
+              <td>{{ alertEvent.resolvedAt | formatMediumDatetime }}</td>
+              <td [jhiTranslate]="'emsApp.AlertStatus.' + (alertEvent.status ?? 'null')">
+                {{ { null: '', OPEN: 'OPEN', ACKNOWLEDGED: 'ACKNOWLEDGED', RESOLVED: 'RESOLVED' }[alertEvent.status ?? 'null'] }}
+              </td>
+              <td>
+                @if (alertEvent.device) {
+                  <div>
+                    <a [routerLink]="['/device', alertEvent.device.id, 'view']">{{ alertEvent.device.name }}</a>
+                  </div>
+                }
+              </td>
+              <td>
+                @if (alertEvent.rule) {
+                  <div>
+                    <a [routerLink]="['/alert-rule', alertEvent.rule.id, 'view']">{{ alertEvent.rule.metricType }}</a>
+                  </div>
+                }
+              </td>
+              <td class="text-end">
+                <div class="btn-group">
+                  <a [routerLink]="['/alert-event', alertEvent.id, 'view']" class="btn btn-info btn-sm" data-cy="entityDetailsButton">
+                    <fa-icon icon="eye" />
+                    <span class="d-none d-md-inline" jhiTranslate="entity.action.view">Xem</span>
+                  </a>
+
+                  <a [routerLink]="['/alert-event', alertEvent.id, 'edit']" class="btn btn-primary btn-sm" data-cy="entityEditButton">
+                    <fa-icon icon="pencil-alt" />
+                    <span class="d-none d-md-inline" jhiTranslate="entity.action.edit">Sửa</span>
+                  </a>
+
+                  <button type="submit" (click)="delete(alertEvent)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton">
+                    <fa-icon icon="times" />
+                    <span class="d-none d-md-inline" jhiTranslate="entity.action.delete">Xóa</span>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+  @if (alertEvents().length > 0) {
+    <div>
+      <div class="d-flex justify-content-center">
+        <jhi-item-count [params]="{ page: page(), totalItems: totalItems(), itemsPerPage: itemsPerPage() }" />
+      </div>
+
+      <div class="d-flex justify-content-center">
+        <ngb-pagination
+          [collectionSize]="totalItems()"
+          [page]="page()"
+          [pageSize]="itemsPerPage()"
+          [maxSize]="5"
+          [rotate]="true"
+          [boundaryLinks]="true"
+          (pageChange)="navigateToPage($event)"
+        />
+      </div>
+    </div>
+  }
+</div>

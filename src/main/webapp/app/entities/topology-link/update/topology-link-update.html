@@ -1,0 +1,119 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    <form name="editForm" novalidate (ngSubmit)="save()" [formGroup]="editForm">
+      <h2
+        id="jhi-topology-link-heading"
+        data-cy="TopologyLinkCreateUpdateHeading"
+        jhiTranslate="emsApp.topologyLink.home.createOrEditLabel"
+      >
+        Thêm mới hoặc cập nhật Topology Link
+      </h2>
+
+      <div>
+        <jhi-alert-error />
+
+        @if (editForm.controls.id.value !== null) {
+          <div class="mb-3">
+            <label class="form-label" for="field_id" jhiTranslate="global.field.id">ID</label>
+            <input type="text" class="form-control" name="id" id="field_id" data-cy="id" formControlName="id" [readonly]="true" />
+          </div>
+        }
+
+        @let linkTypeRef = editForm.get('linkType')!;
+        <div class="mb-3">
+          <label class="form-label" for="field_linkType" jhiTranslate="emsApp.topologyLink.linkType">Link Type</label>
+          <input type="text" class="form-control" name="linkType" id="field_linkType" data-cy="linkType" formControlName="linkType" />
+          @if (linkTypeRef.invalid && (linkTypeRef.dirty || linkTypeRef.touched)) {
+            <div>
+              @if (editForm.get('linkType')?.errors?.maxlength) {
+                <small class="form-text text-danger" jhiTranslate="entity.validation.maxlength" [translateValues]="{ max: '255' }"
+                  >Trường này không được vượt quá 255 ký tự.</small
+                >
+              }
+            </div>
+          }
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="field_bandwidthMbps" jhiTranslate="emsApp.topologyLink.bandwidthMbps">Bandwidth Mbps</label>
+          <input
+            type="number"
+            class="form-control"
+            name="bandwidthMbps"
+            id="field_bandwidthMbps"
+            data-cy="bandwidthMbps"
+            formControlName="bandwidthMbps"
+          />
+        </div>
+
+        @let statusRef = editForm.get('status')!;
+        <div class="mb-3">
+          <label class="form-label" for="field_status" jhiTranslate="emsApp.topologyLink.status">Status</label>
+          <select class="form-control" name="status" formControlName="status" id="field_status" data-cy="status">
+            <option [ngValue]="null">{{ 'emsApp.LinkStatus.null' | translate }}</option>
+            @for (linkStatus of linkStatusValues; track $index) {
+              <option [value]="linkStatus">{{ 'emsApp.LinkStatus.' + linkStatus | translate }}</option>
+            }
+          </select>
+          @if (statusRef.invalid && (statusRef.dirty || statusRef.touched)) {
+            <div>
+              @if (editForm.get('status')?.errors?.required) {
+                <small class="form-text text-danger" jhiTranslate="entity.validation.required">Trường này bắt buộc phải nhập.</small>
+              }
+            </div>
+          }
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="field_sourceDevice" jhiTranslate="emsApp.topologyLink.sourceDevice">Source Device</label>
+          <select
+            class="form-control"
+            id="field_sourceDevice"
+            data-cy="sourceDevice"
+            name="sourceDevice"
+            formControlName="sourceDevice"
+            [compareWith]="compareDevice"
+          >
+            <option [ngValue]="null"></option>
+            @for (deviceOption of devicesSharedCollection(); track $index) {
+              <option [ngValue]="deviceOption">{{ deviceOption.name }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="field_targetDevice" jhiTranslate="emsApp.topologyLink.targetDevice">Target Device</label>
+          <select
+            class="form-control"
+            id="field_targetDevice"
+            data-cy="targetDevice"
+            name="targetDevice"
+            formControlName="targetDevice"
+            [compareWith]="compareDevice"
+          >
+            <option [ngValue]="null"></option>
+            @for (deviceOption of devicesSharedCollection(); track $index) {
+              <option [ngValue]="deviceOption">{{ deviceOption.name }}</option>
+            }
+          </select>
+        </div>
+      </div>
+
+      <div>
+        <button type="button" id="cancel-save" data-cy="entityCreateCancelButton" class="btn btn-secondary" (click)="previousState()">
+          <fa-icon icon="ban" />&nbsp;<span jhiTranslate="entity.action.cancel">Hủy</span>
+        </button>
+
+        <button
+          type="submit"
+          id="save-entity"
+          data-cy="entityCreateSaveButton"
+          [disabled]="editForm.invalid || isSaving()"
+          class="btn btn-primary"
+        >
+          <fa-icon icon="save" />&nbsp;<span jhiTranslate="entity.action.save">Lưu</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

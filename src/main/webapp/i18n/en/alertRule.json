@@ -1,0 +1,27 @@
+{
+  "monitoringApp": {
+    "alertRule": {
+      "home": {
+        "title": "Alert Rules",
+        "refreshListLabel": "Refresh list",
+        "createLabel": "Create a new Alert Rule",
+        "createOrEditLabel": "Create or edit a Alert Rule",
+        "notFound": "No Alert Rules found"
+      },
+      "created": "A new Alert Rule is created with identifier {{ param }}",
+      "updated": "A Alert Rule is updated with identifier {{ param }}",
+      "deleted": "A Alert Rule is deleted with identifier {{ param }}",
+      "delete": {
+        "question": "Are you sure you want to delete Alert Rule {{ id }}?"
+      },
+      "detail": {
+        "title": "Alert Rule"
+      },
+      "id": "ID",
+      "metricType": "Metric Type",
+      "thresholdWarning": "Threshold Warning",
+      "thresholdCritical": "Threshold Critical",
+      "enabled": "Enabled"
+    }
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "emsApp": {
+    "alertEvent": {
+      "home": {
+        "title": "Alert Events",
+        "refreshListLabel": "Refresh list",
+        "createLabel": "Thêm mới một Alert Event",
+        "createOrEditLabel": "Thêm mới hoặc cập nhật Alert Event",
+        "notFound": "No Alert Events found"
+      },
+      "created": "Một Alert Event mới được tạo với định danh {{ param }}",
+      "updated": "Một Alert Event cập nhật với định danh {{ param }}",
+      "deleted": "Một Alert Event đã xóa với định danh {{ param }}",
+      "delete": {
+        "question": "Bạn có chắc là muốn xóa Alert Event {{ id }}?"
+      },
+      "detail": {
+        "title": "Alert Event"
+      },
+      "id": "ID",
+      "metricType": "Metric Type",
+      "value": "Value",
+      "severity": "Severity",
+      "message": "Message",
+      "triggeredAt": "Triggered At",
+      "resolvedAt": "Resolved At",
+      "status": "Status",
+      "device": "Device",
+      "rule": "Rule"
+    }
+  }
+}

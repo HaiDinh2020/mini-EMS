@@ -1,0 +1,10 @@
+{
+  "emsApp": {
+    "AlertStatus": {
+      "null": "",
+      "OPEN": "OPEN",
+      "ACKNOWLEDGED": "ACKNOWLEDGED",
+      "RESOLVED": "RESOLVED"
+    }
+  }
+}

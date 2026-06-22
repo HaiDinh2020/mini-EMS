@@ -1,0 +1,28 @@
+{
+  "monitoringApp": {
+    "topologyLink": {
+      "home": {
+        "title": "Topology Links",
+        "refreshListLabel": "Refresh list",
+        "createLabel": "Create a new Topology Link",
+        "createOrEditLabel": "Create or edit a Topology Link",
+        "notFound": "No Topology Links found"
+      },
+      "created": "A new Topology Link is created with identifier {{ param }}",
+      "updated": "A Topology Link is updated with identifier {{ param }}",
+      "deleted": "A Topology Link is deleted with identifier {{ param }}",
+      "delete": {
+        "question": "Are you sure you want to delete Topology Link {{ id }}?"
+      },
+      "detail": {
+        "title": "Topology Link"
+      },
+      "id": "ID",
+      "linkType": "Link Type",
+      "bandwidthMbps": "Bandwidth Mbps",
+      "status": "Status",
+      "sourceDevice": "Source Device",
+      "targetDevice": "Target Device"
+    }
+  }
+}

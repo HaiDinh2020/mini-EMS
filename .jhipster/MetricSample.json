@@ -1,0 +1,43 @@
+{
+  "annotations": {
+    "changelogDate": "20260619042404"
+  },
+  "applications": ["*"],
+  "dto": "mapstruct",
+  "fields": [
+    {
+      "fieldName": "cpuUsage",
+      "fieldType": "Double"
+    },
+    {
+      "fieldName": "ramUsage",
+      "fieldType": "Double"
+    },
+    {
+      "fieldName": "diskUsage",
+      "fieldType": "Double"
+    },
+    {
+      "fieldName": "pingLatencyMs",
+      "fieldType": "Double"
+    },
+    {
+      "fieldName": "collectedAt",
+      "fieldType": "Instant",
+      "fieldValidateRules": ["required"]
+    }
+  ],
+  "name": "MetricSample",
+  "pagination": "pagination",
+  "relationships": [
+    {
+      "otherEntityField": "name",
+      "otherEntityName": "device",
+      "relationshipName": "device",
+      "relationshipSide": "left",
+      "relationshipType": "many-to-one"
+    }
+  ],
+  "searchEngine": "no",
+  "service": "serviceImpl"
+}

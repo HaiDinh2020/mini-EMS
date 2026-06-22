@@ -1,0 +1,258 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    <form name="editForm" novalidate (ngSubmit)="save()" [formGroup]="editForm">
+      <h2 id="jhi-device-heading" data-cy="DeviceCreateUpdateHeading" jhiTranslate="emsApp.device.home.createOrEditLabel">
+        Thêm mới hoặc cập nhật Device
+      </h2>
+
+      <div>
+        <jhi-alert-error />
+
+        @if (editForm.controls.id.value !== null) {
+          <div class="mb-3">
+            <label class="form-label" for="field_id" jhiTranslate="global.field.id">ID</label>
+            <input type="text" class="form-control" name="id" id="field_id" data-cy="id" formControlName="id" [readonly]="true" />
+          </div>
+        }
+
+        @let nameRef = editForm.get('name')!;
+        <div class="mb-3">
+          <label class="form-label" for="field_name" jhiTranslate="emsApp.device.name">Name</label>
+          <input type="text" class="form-control" name="name" id="field_name" data-cy="name" formControlName="name" />
+          @if (nameRef.invalid && (nameRef.dirty || nameRef.touched)) {
+            <div>
+              @if (editForm.get('name')?.errors?.required) {
+                <small class="form-text text-danger" jhiTranslate="entity.validation.required">Trường này bắt buộc phải nhập.</small>
+              }
+              @if (editForm.get('name')?.errors?.maxlength) {
+                <small class="form-text text-danger" jhiTranslate="entity.validation.maxlength" [translateValues]="{ max: '255' }"
+                  >Trường này không được vượt quá 255 ký tự.</small
+                >
+              }
+            </div>
+          }
+        </div>
+
+        @let ipAddressRef = editForm.get('ipAddress')!;
+        <div class="mb-3">
+          <label class="form-label" for="field_ipAddress" jhiTranslate="emsApp.device.ipAddress">Ip Address</label>
+          <input type="text" class="form-control" name="ipAddress" id="field_ipAddress" data-cy="ipAddress" formControlName="ipAddress" />
+          @if (ipAddressRef.invalid && (ipAddressRef.dirty || ipAddressRef.touched)) {
+            <div>
+              @if (editForm.get('ipAddress')?.errors?.required) {
+                <small class="form-text text-danger" jhiTranslate="entity.validation.required">Trường này bắt buộc phải nhập.</small>
+              }
+              @if (editForm.get('ipAddress')?.errors?.maxlength) {
+                <small class="form-text text-danger" jhiTranslate="entity.validation.maxlength" [translateValues]="{ max: '255' }"
+                  >Trường này không được vượt quá 255 ký tự.</small
+                >
+              }
+            </div>
+          }
+        </div>
+
+        @let hostnameRef = editForm.get('hostname')!;
+        <div class="mb-3">
+          <label class="form-label" for="field_hostname" jhiTranslate="emsApp.device.hostname">Hostname</label>
+          <input type="text" class="form-control" name="hostname" id="field_hostname" data-cy="hostname" formControlName="hostname" />
+          @if (hostnameRef.invalid && (hostnameRef.dirty || hostnameRef.touched)) {
+            <div>
+              @if (editForm.get('hostname')?.errors?.maxlength) {
+                <small class="form-text text-danger" jhiTranslate="entity.validation.maxlength" [translateValues]="{ max: '255' }"
+                  >Trường này không được vượt quá 255 ký tự.</small
+                >
+              }
+            </div>
+          }
+        </div>
+
+        @let deviceTypeRef = editForm.get('deviceType')!;
+        <div class="mb-3">
+          <label class="form-label" for="field_deviceType" jhiTranslate="emsApp.device.deviceType">Device Type</label>
+          <select class="form-control" name="deviceType" formControlName="deviceType" id="field_deviceType" data-cy="deviceType">
+            <option [ngValue]="null">{{ 'emsApp.DeviceType.null' | translate }}</option>
+            @for (deviceType of deviceTypeValues; track $index) {
+              <option [value]="deviceType">{{ 'emsApp.DeviceType.' + deviceType | translate }}</option>
+            }
+          </select>
+          @if (deviceTypeRef.invalid && (deviceTypeRef.dirty || deviceTypeRef.touched)) {
+            <div>
+              @if (editForm.get('deviceType')?.errors?.required) {
+                <small class="form-text text-danger" jhiTranslate="entity.validation.required">Trường này bắt buộc phải nhập.</small>
+              }
+            </div>
+          }
+        </div>
+
+        @let vendorRef = editForm.get('vendor')!;
+        <div class="mb-3">
+          <label class="form-label" for="field_vendor" jhiTranslate="emsApp.device.vendor">Vendor</label>
+          <input type="text" class="form-control" name="vendor" id="field_vendor" data-cy="vendor" formControlName="vendor" />
+          @if (vendorRef.invalid && (vendorRef.dirty || vendorRef.touched)) {
+            <div>
+              @if (editForm.get('vendor')?.errors?.maxlength) {
+                <small class="form-text text-danger" jhiTranslate="entity.validation.maxlength" [translateValues]="{ max: '255' }"
+                  >Trường này không được vượt quá 255 ký tự.</small
+                >
+              }
+            </div>
+          }
+        </div>
+
+        @let modelRef = editForm.get('model')!;
+        <div class="mb-3">
+          <label class="form-label" for="field_model" jhiTranslate="emsApp.device.model">Model</label>
+          <input type="text" class="form-control" name="model" id="field_model" data-cy="model" formControlName="model" />
+          @if (modelRef.invalid && (modelRef.dirty || modelRef.touched)) {
+            <div>
+              @if (editForm.get('model')?.errors?.maxlength) {
+                <small class="form-text text-danger" jhiTranslate="entity.validation.maxlength" [translateValues]="{ max: '255' }"
+                  >Trường này không được vượt quá 255 ký tự.</small
+                >
+              }
+            </div>
+          }
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="field_sshPort" jhiTranslate="emsApp.device.sshPort">Ssh Port</label>
+          <input type="number" class="form-control" name="sshPort" id="field_sshPort" data-cy="sshPort" formControlName="sshPort" />
+        </div>
+
+        @let sshUsernameRef = editForm.get('sshUsername')!;
+        <div class="mb-3">
+          <label class="form-label" for="field_sshUsername" jhiTranslate="emsApp.device.sshUsername">Ssh Username</label>
+          <input
+            type="text"
+            class="form-control"
+            name="sshUsername"
+            id="field_sshUsername"
+            data-cy="sshUsername"
+            formControlName="sshUsername"
+          />
+          @if (sshUsernameRef.invalid && (sshUsernameRef.dirty || sshUsernameRef.touched)) {
+            <div>
+              @if (editForm.get('sshUsername')?.errors?.maxlength) {
+                <small class="form-text text-danger" jhiTranslate="entity.validation.maxlength" [translateValues]="{ max: '255' }"
+                  >Trường này không được vượt quá 255 ký tự.</small
+                >
+              }
+            </div>
+          }
+        </div>
+
+        @let locationRef = editForm.get('location')!;
+        <div class="mb-3">
+          <label class="form-label" for="field_location" jhiTranslate="emsApp.device.location">Location</label>
+          <input type="text" class="form-control" name="location" id="field_location" data-cy="location" formControlName="location" />
+          @if (locationRef.invalid && (locationRef.dirty || locationRef.touched)) {
+            <div>
+              @if (editForm.get('location')?.errors?.maxlength) {
+                <small class="form-text text-danger" jhiTranslate="entity.validation.maxlength" [translateValues]="{ max: '500' }"
+                  >Trường này không được vượt quá 500 ký tự.</small
+                >
+              }
+            </div>
+          }
+        </div>
+
+        @let statusRef = editForm.get('status')!;
+        <div class="mb-3">
+          <label class="form-label" for="field_status" jhiTranslate="emsApp.device.status">Status</label>
+          <select class="form-control" name="status" formControlName="status" id="field_status" data-cy="status">
+            <option [ngValue]="null">{{ 'emsApp.DeviceStatus.null' | translate }}</option>
+            @for (deviceStatus of deviceStatusValues; track $index) {
+              <option [value]="deviceStatus">{{ 'emsApp.DeviceStatus.' + deviceStatus | translate }}</option>
+            }
+          </select>
+          @if (statusRef.invalid && (statusRef.dirty || statusRef.touched)) {
+            <div>
+              @if (editForm.get('status')?.errors?.required) {
+                <small class="form-text text-danger" jhiTranslate="entity.validation.required">Trường này bắt buộc phải nhập.</small>
+              }
+            </div>
+          }
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="field_lastCheckedAt" jhiTranslate="emsApp.device.lastCheckedAt">Last Checked At</label>
+          <div class="d-flex">
+            <input
+              id="field_lastCheckedAt"
+              data-cy="lastCheckedAt"
+              type="datetime-local"
+              class="form-control"
+              name="lastCheckedAt"
+              formControlName="lastCheckedAt"
+              placeholder="YYYY-MM-DD HH:mm"
+            />
+          </div>
+        </div>
+
+        @let monitoringEnabledRef = editForm.get('monitoringEnabled')!;
+        <div class="mb-3">
+          <label class="form-label" for="field_monitoringEnabled" jhiTranslate="emsApp.device.monitoringEnabled">Monitoring Enabled</label>
+          <input
+            type="checkbox"
+            class="form-check"
+            name="monitoringEnabled"
+            id="field_monitoringEnabled"
+            data-cy="monitoringEnabled"
+            formControlName="monitoringEnabled"
+          />
+          @if (monitoringEnabledRef.invalid && (monitoringEnabledRef.dirty || monitoringEnabledRef.touched)) {
+            <div>
+              @if (editForm.get('monitoringEnabled')?.errors?.required) {
+                <small class="form-text text-danger" jhiTranslate="entity.validation.required">Trường này bắt buộc phải nhập.</small>
+              }
+            </div>
+          }
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="field_description" jhiTranslate="emsApp.device.description">Description</label>
+          <textarea
+            class="form-control"
+            name="description"
+            id="field_description"
+            data-cy="description"
+            formControlName="description"
+          ></textarea>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="field_credential" jhiTranslate="emsApp.device.credential">Credential</label>
+          <select
+            class="form-control"
+            id="field_credential"
+            data-cy="credential"
+            name="credential"
+            formControlName="credential"
+            [compareWith]="compareCredential"
+          >
+            <option [ngValue]="null"></option>
+            @for (credentialOption of credentialsSharedCollection(); track $index) {
+              <option [ngValue]="credentialOption">{{ credentialOption.name }}</option>
+            }
+          </select>
+        </div>
+      </div>
+
+      <div>
+        <button type="button" id="cancel-save" data-cy="entityCreateCancelButton" class="btn btn-secondary" (click)="previousState()">
+          <fa-icon icon="ban" />&nbsp;<span jhiTranslate="entity.action.cancel">Hủy</span>
+        </button>
+
+        <button
+          type="submit"
+          id="save-entity"
+          data-cy="entityCreateSaveButton"
+          [disabled]="editForm.invalid || isSaving()"
+          class="btn btn-primary"
+        >
+          <fa-icon icon="save" />&nbsp;<span jhiTranslate="entity.action.save">Lưu</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

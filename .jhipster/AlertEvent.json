@@ -1,0 +1,68 @@
+{
+  "annotations": {
+    "changelogDate": "20260619042406"
+  },
+  "applications": ["*"],
+  "dto": "mapstruct",
+  "fields": [
+    {
+      "fieldName": "metricType",
+      "fieldType": "MetricType",
+      "fieldValidateRules": ["required"],
+      "fieldValues": "CPU,RAM,DISK,PING_LATENCY,AVAILABILITY"
+    },
+    {
+      "fieldName": "value",
+      "fieldType": "Double",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "severity",
+      "fieldType": "Severity",
+      "fieldValidateRules": ["required"],
+      "fieldValues": "WARNING,CRITICAL"
+    },
+    {
+      "fieldName": "message",
+      "fieldType": "String",
+      "fieldValidateRules": ["required", "maxlength"],
+      "fieldValidateRulesMaxlength": "1000"
+    },
+    {
+      "fieldName": "triggeredAt",
+      "fieldType": "Instant",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "resolvedAt",
+      "fieldType": "Instant"
+    },
+    {
+      "fieldName": "status",
+      "fieldType": "AlertStatus",
+      "fieldValidateRules": ["required"],
+      "fieldValues": "OPEN,ACKNOWLEDGED,RESOLVED"
+    }
+  ],
+  "jpaMetamodelFiltering": false,
+  "name": "AlertEvent",
+  "pagination": "pagination",
+  "relationships": [
+    {
+      "otherEntityField": "name",
+      "otherEntityName": "device",
+      "relationshipName": "device",
+      "relationshipSide": "left",
+      "relationshipType": "many-to-one"
+    },
+    {
+      "otherEntityField": "metricType",
+      "otherEntityName": "alertRule",
+      "relationshipName": "rule",
+      "relationshipSide": "left",
+      "relationshipType": "many-to-one"
+    }
+  ],
+  "searchEngine": "no",
+  "service": "serviceImpl"
+}

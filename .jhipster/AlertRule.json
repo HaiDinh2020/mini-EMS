@@ -1,0 +1,36 @@
+{
+  "annotations": {
+    "changelogDate": "20260619042405"
+  },
+  "applications": ["*"],
+  "dto": "mapstruct",
+  "fields": [
+    {
+      "fieldName": "metricType",
+      "fieldType": "MetricType",
+      "fieldValidateRules": ["required"],
+      "fieldValues": "CPU,RAM,DISK,PING_LATENCY,AVAILABILITY"
+    },
+    {
+      "fieldName": "thresholdWarning",
+      "fieldType": "Double",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "thresholdCritical",
+      "fieldType": "Double",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "enabled",
+      "fieldType": "Boolean",
+      "fieldValidateRules": ["required"]
+    }
+  ],
+  "jpaMetamodelFiltering": false,
+  "name": "AlertRule",
+  "pagination": "pagination",
+  "relationships": [],
+  "searchEngine": "no",
+  "service": "serviceImpl"
+}

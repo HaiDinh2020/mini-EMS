@@ -1,0 +1,147 @@
+<div>
+  <h2 id="page-heading" data-cy="TopologyLinkHeading">
+    <span jhiTranslate="emsApp.topologyLink.home.title">Topology Links</span>
+
+    <div class="d-flex justify-content-end">
+      <button class="btn btn-info me-2" (click)="load()" [disabled]="isLoading()">
+        <fa-icon icon="sync" [animation]="isLoading() ? 'spin' : undefined" />
+        <span jhiTranslate="emsApp.topologyLink.home.refreshListLabel">Refresh list</span>
+      </button>
+
+      <button
+        id="jh-create-entity"
+        data-cy="entityCreateButton"
+        class="btn btn-primary jh-create-entity create-topology-link"
+        [routerLink]="['/topology-link/new']"
+      >
+        <fa-icon icon="plus" />
+        <span jhiTranslate="emsApp.topologyLink.home.createLabel">Thêm mới một Topology Link</span>
+      </button>
+    </div>
+  </h2>
+
+  <jhi-alert-error />
+
+  <jhi-alert />
+
+  @if (topologyLinks().length === 0) {
+    <div class="alert alert-warning" id="no-result">
+      <span jhiTranslate="emsApp.topologyLink.home.notFound">No Topology Links found</span>
+    </div>
+  } @else {
+    <div class="table-responsive table-entities" id="entities">
+      <table class="table table-striped" aria-describedby="page-heading">
+        <thead>
+          <tr jhiSort [(sortState)]="sortState" (sortChange)="navigateToWithComponentValues($event)">
+            <th scope="col" jhiSortBy="id">
+              <div class="d-flex">
+                <span jhiTranslate="global.field.id">ID</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="linkType">
+              <div class="d-flex">
+                <span jhiTranslate="emsApp.topologyLink.linkType">Link Type</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="bandwidthMbps">
+              <div class="d-flex">
+                <span jhiTranslate="emsApp.topologyLink.bandwidthMbps">Bandwidth Mbps</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="status">
+              <div class="d-flex">
+                <span jhiTranslate="emsApp.topologyLink.status">Status</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="sourceDevice.name">
+              <div class="d-flex">
+                <span jhiTranslate="emsApp.topologyLink.sourceDevice">Source Device</span>
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="targetDevice.name">
+              <div class="d-flex">
+                <span jhiTranslate="emsApp.topologyLink.targetDevice">Target Device</span>
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col"></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (topologyLink of topologyLinks(); track trackId(topologyLink)) {
+            <tr data-cy="entityTable">
+              <td>
+                <a [routerLink]="['/topology-link', topologyLink.id, 'view']">{{ topologyLink.id }}</a>
+              </td>
+              <td>{{ topologyLink.linkType }}</td>
+              <td>{{ topologyLink.bandwidthMbps }}</td>
+              <td [jhiTranslate]="'emsApp.LinkStatus.' + (topologyLink.status ?? 'null')">
+                {{ { null: '', UP: 'UP', DOWN: 'DOWN', DEGRADED: 'DEGRADED' }[topologyLink.status ?? 'null'] }}
+              </td>
+              <td>
+                @if (topologyLink.sourceDevice) {
+                  <div>
+                    <a [routerLink]="['/device', topologyLink.sourceDevice.id, 'view']">{{ topologyLink.sourceDevice.name }}</a>
+                  </div>
+                }
+              </td>
+              <td>
+                @if (topologyLink.targetDevice) {
+                  <div>
+                    <a [routerLink]="['/device', topologyLink.targetDevice.id, 'view']">{{ topologyLink.targetDevice.name }}</a>
+                  </div>
+                }
+              </td>
+              <td class="text-end">
+                <div class="btn-group">
+                  <a [routerLink]="['/topology-link', topologyLink.id, 'view']" class="btn btn-info btn-sm" data-cy="entityDetailsButton">
+                    <fa-icon icon="eye" />
+                    <span class="d-none d-md-inline" jhiTranslate="entity.action.view">Xem</span>
+                  </a>
+
+                  <a [routerLink]="['/topology-link', topologyLink.id, 'edit']" class="btn btn-primary btn-sm" data-cy="entityEditButton">
+                    <fa-icon icon="pencil-alt" />
+                    <span class="d-none d-md-inline" jhiTranslate="entity.action.edit">Sửa</span>
+                  </a>
+
+                  <button type="submit" (click)="delete(topologyLink)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton">
+                    <fa-icon icon="times" />
+                    <span class="d-none d-md-inline" jhiTranslate="entity.action.delete">Xóa</span>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+  @if (topologyLinks().length > 0) {
+    <div>
+      <div class="d-flex justify-content-center">
+        <jhi-item-count [params]="{ page: page(), totalItems: totalItems(), itemsPerPage: itemsPerPage() }" />
+      </div>
+
+      <div class="d-flex justify-content-center">
+        <ngb-pagination
+          [collectionSize]="totalItems()"
+          [page]="page()"
+          [pageSize]="itemsPerPage()"
+          [maxSize]="5"
+          [rotate]="true"
+          [boundaryLinks]="true"
+          (pageChange)="navigateToPage($event)"
+        />
+      </div>
+    </div>
+  }
+</div>

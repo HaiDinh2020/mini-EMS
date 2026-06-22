@@ -1,0 +1,24 @@
+@if (device) {
+  <form name="deleteForm" (ngSubmit)="confirmDelete(device.id!)">
+    <div class="modal-header">
+      <h4 class="modal-title" data-cy="deviceDeleteDialogHeading" jhiTranslate="entity.delete.title">Xác nhận hành động xóa</h4>
+    </div>
+
+    <div class="modal-body">
+      <jhi-alert-error />
+      <p id="jhi-delete-device-heading" jhiTranslate="emsApp.device.delete.question" [translateValues]="{ id: device.id }">
+        Bạn có chắc là muốn xóa Device {{ device.id }}?
+      </p>
+    </div>
+
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" data-dismiss="modal" (click)="cancel()">
+        <fa-icon icon="ban" />&nbsp;<span jhiTranslate="entity.action.cancel">Hủy</span>
+      </button>
+
+      <button id="jhi-confirm-delete-device" data-cy="entityConfirmDeleteButton" type="submit" class="btn btn-danger">
+        <fa-icon icon="times" />&nbsp;<span jhiTranslate="entity.action.delete">Xóa</span>
+      </button>
+    </div>
+  </form>
+}

@@ -1,0 +1,28 @@
+{
+  "emsApp": {
+    "topologyLink": {
+      "home": {
+        "title": "Topology Links",
+        "refreshListLabel": "Refresh list",
+        "createLabel": "Thêm mới một Topology Link",
+        "createOrEditLabel": "Thêm mới hoặc cập nhật Topology Link",
+        "notFound": "No Topology Links found"
+      },
+      "created": "Một Topology Link mới được tạo với định danh {{ param }}",
+      "updated": "Một Topology Link cập nhật với định danh {{ param }}",
+      "deleted": "Một Topology Link đã xóa với định danh {{ param }}",
+      "delete": {
+        "question": "Bạn có chắc là muốn xóa Topology Link {{ id }}?"
+      },
+      "detail": {
+        "title": "Topology Link"
+      },
+      "id": "ID",
+      "linkType": "Link Type",
+      "bandwidthMbps": "Bandwidth Mbps",
+      "status": "Status",
+      "sourceDevice": "Source Device",
+      "targetDevice": "Target Device"
+    }
+  }
+}

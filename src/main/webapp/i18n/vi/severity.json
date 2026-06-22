@@ -1,0 +1,9 @@
+{
+  "emsApp": {
+    "Severity": {
+      "null": "",
+      "WARNING": "WARNING",
+      "CRITICAL": "CRITICAL"
+    }
+  }
+}

@@ -1,0 +1,50 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    @if (alertRule(); as alertRuleRef) {
+      <div>
+        <h2 data-cy="alertRuleDetailsHeading"><span jhiTranslate="emsApp.alertRule.detail.title">Alert Rule</span></h2>
+
+        <hr />
+
+        <jhi-alert-error />
+
+        <jhi-alert />
+
+        <dl class="row-md jh-entity-details">
+          <dt><span jhiTranslate="global.field.id">ID</span></dt>
+          <dd>
+            <span>{{ alertRuleRef.id }}</span>
+          </dd>
+          <dt><span jhiTranslate="emsApp.alertRule.metricType">Metric Type</span></dt>
+          <dd>
+            <span [jhiTranslate]="'emsApp.MetricType.' + (alertRuleRef.metricType ?? 'null')">{{
+              { null: '', CPU: 'CPU', RAM: 'RAM', DISK: 'DISK', PING_LATENCY: 'PING_LATENCY', AVAILABILITY: 'AVAILABILITY' }[
+                alertRuleRef.metricType ?? 'null'
+              ]
+            }}</span>
+          </dd>
+          <dt><span jhiTranslate="emsApp.alertRule.thresholdWarning">Threshold Warning</span></dt>
+          <dd>
+            <span>{{ alertRuleRef.thresholdWarning }}</span>
+          </dd>
+          <dt><span jhiTranslate="emsApp.alertRule.thresholdCritical">Threshold Critical</span></dt>
+          <dd>
+            <span>{{ alertRuleRef.thresholdCritical }}</span>
+          </dd>
+          <dt><span jhiTranslate="emsApp.alertRule.enabled">Enabled</span></dt>
+          <dd>
+            <span>{{ alertRuleRef.enabled }}</span>
+          </dd>
+        </dl>
+
+        <button type="submit" (click)="previousState()" class="btn btn-info" data-cy="entityDetailsBackButton">
+          <fa-icon icon="arrow-left" />&nbsp;<span jhiTranslate="entity.action.back">Quay lại</span>
+        </button>
+
+        <button type="button" [routerLink]="['/alert-rule', alertRuleRef.id, 'edit']" class="btn btn-primary">
+          <fa-icon icon="pencil-alt" />&nbsp;<span jhiTranslate="entity.action.edit">Sửa</span>
+        </button>
+      </div>
+    }
+  </div>
+</div>

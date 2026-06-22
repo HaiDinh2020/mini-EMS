@@ -1,0 +1,234 @@
+<div>
+  <h2 id="page-heading" data-cy="DeviceHeading">
+    <span jhiTranslate="emsApp.device.home.title">Devices</span>
+
+    <div class="d-flex justify-content-end">
+      <button class="btn btn-info me-2" (click)="load()" [disabled]="isLoading()">
+        <fa-icon icon="sync" [animation]="isLoading() ? 'spin' : undefined" />
+        <span jhiTranslate="emsApp.device.home.refreshListLabel">Refresh list</span>
+      </button>
+
+      <button
+        id="jh-create-entity"
+        data-cy="entityCreateButton"
+        class="btn btn-primary jh-create-entity create-device"
+        [routerLink]="['/device/new']"
+      >
+        <fa-icon icon="plus" />
+        <span jhiTranslate="emsApp.device.home.createLabel">Thêm mới một Device</span>
+      </button>
+    </div>
+  </h2>
+
+  <jhi-alert-error />
+
+  <jhi-alert />
+
+  @if (devices().length === 0) {
+    <div class="alert alert-warning" id="no-result">
+      <span jhiTranslate="emsApp.device.home.notFound">No Devices found</span>
+    </div>
+  } @else {
+    <div class="table-responsive table-entities" id="entities">
+      <table class="table table-striped" aria-describedby="page-heading">
+        <thead>
+          <tr jhiSort [(sortState)]="sortState" (sortChange)="navigateToWithComponentValues($event)">
+            <th scope="col" jhiSortBy="id">
+              <div class="d-flex">
+                <span jhiTranslate="global.field.id">ID</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="name">
+              <div class="d-flex">
+                <span jhiTranslate="emsApp.device.name">Name</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="ipAddress">
+              <div class="d-flex">
+                <span jhiTranslate="emsApp.device.ipAddress">Ip Address</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="hostname">
+              <div class="d-flex">
+                <span jhiTranslate="emsApp.device.hostname">Hostname</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="deviceType">
+              <div class="d-flex">
+                <span jhiTranslate="emsApp.device.deviceType">Device Type</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="vendor">
+              <div class="d-flex">
+                <span jhiTranslate="emsApp.device.vendor">Vendor</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="model">
+              <div class="d-flex">
+                <span jhiTranslate="emsApp.device.model">Model</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="sshPort">
+              <div class="d-flex">
+                <span jhiTranslate="emsApp.device.sshPort">Ssh Port</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="sshUsername">
+              <div class="d-flex">
+                <span jhiTranslate="emsApp.device.sshUsername">Ssh Username</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="location">
+              <div class="d-flex">
+                <span jhiTranslate="emsApp.device.location">Location</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="status">
+              <div class="d-flex">
+                <span jhiTranslate="emsApp.device.status">Status</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="lastCheckedAt">
+              <div class="d-flex">
+                <span jhiTranslate="emsApp.device.lastCheckedAt">Last Checked At</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="monitoringEnabled">
+              <div class="d-flex">
+                <span jhiTranslate="emsApp.device.monitoringEnabled">Monitoring Enabled</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="description">
+              <div class="d-flex">
+                <span jhiTranslate="emsApp.device.description">Description</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="credential.name">
+              <div class="d-flex">
+                <span jhiTranslate="emsApp.device.credential">Credential</span>
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col"></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (device of devices(); track trackId(device)) {
+            <tr data-cy="entityTable">
+              <td>
+                <a [routerLink]="['/device', device.id, 'view']">{{ device.id }}</a>
+              </td>
+              <td>{{ device.name }}</td>
+              <td>{{ device.ipAddress }}</td>
+              <td>{{ device.hostname }}</td>
+              <td [jhiTranslate]="'emsApp.DeviceType.' + (device.deviceType ?? 'null')">
+                {{
+                  {
+                    null: '',
+                    SERVER: 'SERVER',
+                    ROUTER: 'ROUTER',
+                    SWITCH: 'SWITCH',
+                    FIREWALL: 'FIREWALL',
+                    GNODEB: 'GNODEB',
+                    AMF: 'AMF',
+                    SMF: 'SMF',
+                    UPF: 'UPF',
+                    UDM: 'UDM',
+                    OTHER: 'OTHER',
+                  }[device.deviceType ?? 'null']
+                }}
+              </td>
+              <td>{{ device.vendor }}</td>
+              <td>{{ device.model }}</td>
+              <td>{{ device.sshPort }}</td>
+              <td>{{ device.sshUsername }}</td>
+              <td>{{ device.location }}</td>
+              <td [jhiTranslate]="'emsApp.DeviceStatus.' + (device.status ?? 'null')">
+                {{
+                  { null: '', ONLINE: 'ONLINE', OFFLINE: 'OFFLINE', UNKNOWN: 'UNKNOWN', WARNING: 'WARNING', CRITICAL: 'CRITICAL' }[
+                    device.status ?? 'null'
+                  ]
+                }}
+              </td>
+              <td>{{ device.lastCheckedAt | formatMediumDatetime }}</td>
+              <td>{{ device.monitoringEnabled }}</td>
+              <td>{{ device.description }}</td>
+              <td>
+                @if (device.credential) {
+                  <div>
+                    <a [routerLink]="['/credential', device.credential.id, 'view']">{{ device.credential.name }}</a>
+                  </div>
+                }
+              </td>
+              <td class="text-end">
+                <div class="btn-group">
+                  <a [routerLink]="['/device', device.id, 'view']" class="btn btn-info btn-sm" data-cy="entityDetailsButton">
+                    <fa-icon icon="eye" />
+                    <span class="d-none d-md-inline" jhiTranslate="entity.action.view">Xem</span>
+                  </a>
+
+                  <a [routerLink]="['/device', device.id, 'edit']" class="btn btn-primary btn-sm" data-cy="entityEditButton">
+                    <fa-icon icon="pencil-alt" />
+                    <span class="d-none d-md-inline" jhiTranslate="entity.action.edit">Sửa</span>
+                  </a>
+
+                  <button type="submit" (click)="delete(device)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton">
+                    <fa-icon icon="times" />
+                    <span class="d-none d-md-inline" jhiTranslate="entity.action.delete">Xóa</span>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+  @if (devices().length > 0) {
+    <div>
+      <div class="d-flex justify-content-center">
+        <jhi-item-count [params]="{ page: page(), totalItems: totalItems(), itemsPerPage: itemsPerPage() }" />
+      </div>
+
+      <div class="d-flex justify-content-center">
+        <ngb-pagination
+          [collectionSize]="totalItems()"
+          [page]="page()"
+          [pageSize]="itemsPerPage()"
+          [maxSize]="5"
+          [rotate]="true"
+          [boundaryLinks]="true"
+          (pageChange)="navigateToPage($event)"
+        />
+      </div>
+    </div>
+  }
+</div>

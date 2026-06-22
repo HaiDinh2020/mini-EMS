@@ -1,0 +1,46 @@
+{
+  "annotations": {
+    "changelogDate": "20260619042407"
+  },
+  "applications": ["*"],
+  "dto": "mapstruct",
+  "fields": [
+    {
+      "fieldName": "linkType",
+      "fieldType": "String",
+      "fieldValidateRules": ["maxlength"],
+      "fieldValidateRulesMaxlength": "255"
+    },
+    {
+      "fieldName": "bandwidthMbps",
+      "fieldType": "Double"
+    },
+    {
+      "fieldName": "status",
+      "fieldType": "LinkStatus",
+      "fieldValidateRules": ["required"],
+      "fieldValues": "UP,DOWN,DEGRADED"
+    }
+  ],
+  "jpaMetamodelFiltering": false,
+  "name": "TopologyLink",
+  "pagination": "pagination",
+  "relationships": [
+    {
+      "otherEntityField": "name",
+      "otherEntityName": "device",
+      "relationshipName": "sourceDevice",
+      "relationshipSide": "left",
+      "relationshipType": "many-to-one"
+    },
+    {
+      "otherEntityField": "name",
+      "otherEntityName": "device",
+      "relationshipName": "targetDevice",
+      "relationshipSide": "left",
+      "relationshipType": "many-to-one"
+    }
+  ],
+  "searchEngine": "no",
+  "service": "serviceImpl"
+}

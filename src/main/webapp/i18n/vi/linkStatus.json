@@ -1,0 +1,10 @@
+{
+  "emsApp": {
+    "LinkStatus": {
+      "null": "",
+      "UP": "UP",
+      "DOWN": "DOWN",
+      "DEGRADED": "DEGRADED"
+    }
+  }
+}

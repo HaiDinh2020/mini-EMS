@@ -1,0 +1,37 @@
+{
+  "emsApp": {
+    "device": {
+      "home": {
+        "title": "Devices",
+        "refreshListLabel": "Refresh list",
+        "createLabel": "Thêm mới một Device",
+        "createOrEditLabel": "Thêm mới hoặc cập nhật Device",
+        "notFound": "No Devices found"
+      },
+      "created": "Một Device mới được tạo với định danh {{ param }}",
+      "updated": "Một Device cập nhật với định danh {{ param }}",
+      "deleted": "Một Device đã xóa với định danh {{ param }}",
+      "delete": {
+        "question": "Bạn có chắc là muốn xóa Device {{ id }}?"
+      },
+      "detail": {
+        "title": "Device"
+      },
+      "id": "ID",
+      "name": "Name",
+      "ipAddress": "Ip Address",
+      "hostname": "Hostname",
+      "deviceType": "Device Type",
+      "vendor": "Vendor",
+      "model": "Model",
+      "sshPort": "Ssh Port",
+      "sshUsername": "Ssh Username",
+      "location": "Location",
+      "status": "Status",
+      "lastCheckedAt": "Last Checked At",
+      "monitoringEnabled": "Monitoring Enabled",
+      "description": "Description",
+      "credential": "Credential"
+    }
+  }
+}

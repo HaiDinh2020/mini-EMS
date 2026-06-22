@@ -1,0 +1,24 @@
+@if (auditLog) {
+  <form name="deleteForm" (ngSubmit)="confirmDelete(auditLog.id!)">
+    <div class="modal-header">
+      <h4 class="modal-title" data-cy="auditLogDeleteDialogHeading" jhiTranslate="entity.delete.title">Xác nhận hành động xóa</h4>
+    </div>
+
+    <div class="modal-body">
+      <jhi-alert-error />
+      <p id="jhi-delete-auditLog-heading" jhiTranslate="emsApp.auditLog.delete.question" [translateValues]="{ id: auditLog.id }">
+        Bạn có chắc là muốn xóa Audit Log {{ auditLog.id }}?
+      </p>
+    </div>
+
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" data-dismiss="modal" (click)="cancel()">
+        <fa-icon icon="ban" />&nbsp;<span jhiTranslate="entity.action.cancel">Hủy</span>
+      </button>
+
+      <button id="jhi-confirm-delete-auditLog" data-cy="entityConfirmDeleteButton" type="submit" class="btn btn-danger">
+        <fa-icon icon="times" />&nbsp;<span jhiTranslate="entity.action.delete">Xóa</span>
+      </button>
+    </div>
+  </form>
+}

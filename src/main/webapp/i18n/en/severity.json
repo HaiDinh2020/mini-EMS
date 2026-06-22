@@ -1,0 +1,9 @@
+{
+  "monitoringApp": {
+    "Severity": {
+      "null": "",
+      "WARNING": "WARNING",
+      "CRITICAL": "CRITICAL"
+    }
+  }
+}

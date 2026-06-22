@@ -1,0 +1,108 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    @if (device(); as deviceRef) {
+      <div>
+        <h2 data-cy="deviceDetailsHeading"><span jhiTranslate="emsApp.device.detail.title">Device</span></h2>
+
+        <hr />
+
+        <jhi-alert-error />
+
+        <jhi-alert />
+
+        <dl class="row-md jh-entity-details">
+          <dt><span jhiTranslate="global.field.id">ID</span></dt>
+          <dd>
+            <span>{{ deviceRef.id }}</span>
+          </dd>
+          <dt><span jhiTranslate="emsApp.device.name">Name</span></dt>
+          <dd>
+            <span>{{ deviceRef.name }}</span>
+          </dd>
+          <dt><span jhiTranslate="emsApp.device.ipAddress">Ip Address</span></dt>
+          <dd>
+            <span>{{ deviceRef.ipAddress }}</span>
+          </dd>
+          <dt><span jhiTranslate="emsApp.device.hostname">Hostname</span></dt>
+          <dd>
+            <span>{{ deviceRef.hostname }}</span>
+          </dd>
+          <dt><span jhiTranslate="emsApp.device.deviceType">Device Type</span></dt>
+          <dd>
+            <span [jhiTranslate]="'emsApp.DeviceType.' + (deviceRef.deviceType ?? 'null')">{{
+              {
+                null: '',
+                SERVER: 'SERVER',
+                ROUTER: 'ROUTER',
+                SWITCH: 'SWITCH',
+                FIREWALL: 'FIREWALL',
+                GNODEB: 'GNODEB',
+                AMF: 'AMF',
+                SMF: 'SMF',
+                UPF: 'UPF',
+                UDM: 'UDM',
+                OTHER: 'OTHER',
+              }[deviceRef.deviceType ?? 'null']
+            }}</span>
+          </dd>
+          <dt><span jhiTranslate="emsApp.device.vendor">Vendor</span></dt>
+          <dd>
+            <span>{{ deviceRef.vendor }}</span>
+          </dd>
+          <dt><span jhiTranslate="emsApp.device.model">Model</span></dt>
+          <dd>
+            <span>{{ deviceRef.model }}</span>
+          </dd>
+          <dt><span jhiTranslate="emsApp.device.sshPort">Ssh Port</span></dt>
+          <dd>
+            <span>{{ deviceRef.sshPort }}</span>
+          </dd>
+          <dt><span jhiTranslate="emsApp.device.sshUsername">Ssh Username</span></dt>
+          <dd>
+            <span>{{ deviceRef.sshUsername }}</span>
+          </dd>
+          <dt><span jhiTranslate="emsApp.device.location">Location</span></dt>
+          <dd>
+            <span>{{ deviceRef.location }}</span>
+          </dd>
+          <dt><span jhiTranslate="emsApp.device.status">Status</span></dt>
+          <dd>
+            <span [jhiTranslate]="'emsApp.DeviceStatus.' + (deviceRef.status ?? 'null')">{{
+              { null: '', ONLINE: 'ONLINE', OFFLINE: 'OFFLINE', UNKNOWN: 'UNKNOWN', WARNING: 'WARNING', CRITICAL: 'CRITICAL' }[
+                deviceRef.status ?? 'null'
+              ]
+            }}</span>
+          </dd>
+          <dt><span jhiTranslate="emsApp.device.lastCheckedAt">Last Checked At</span></dt>
+          <dd>
+            <span>{{ deviceRef.lastCheckedAt | formatMediumDatetime }}</span>
+          </dd>
+          <dt><span jhiTranslate="emsApp.device.monitoringEnabled">Monitoring Enabled</span></dt>
+          <dd>
+            <span>{{ deviceRef.monitoringEnabled }}</span>
+          </dd>
+          <dt><span jhiTranslate="emsApp.device.description">Description</span></dt>
+          <dd>
+            <span>{{ deviceRef.description }}</span>
+          </dd>
+          <dt><span jhiTranslate="emsApp.device.credential">Credential</span></dt>
+          <dd>
+            @if (device()!.credential) {
+              <div>
+                <a [routerLink]="['/credential', device()!.credential?.id, 'view']">{{ deviceRef.credential?.name }}</a>
+              </div>
+            }
+          </dd>
+        </dl>
+
+        <button type="submit" (click)="previousState()" class="btn btn-info" data-cy="entityDetailsBackButton">
+          <fa-icon icon="arrow-left" />&nbsp;<span jhiTranslate="entity.action.back">Quay lại</span>
+        </button>
+
+        <button type="button" [routerLink]="['/device', deviceRef.id, 'edit']" class="btn btn-primary">
+          <fa-icon icon="pencil-alt" />&nbsp;<span jhiTranslate="entity.action.edit">Sửa</span>
+        </button>
+      </div>
+    }
+  </div>
+</div>

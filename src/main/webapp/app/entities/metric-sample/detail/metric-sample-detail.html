@@ -1,0 +1,58 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    @if (metricSample(); as metricSampleRef) {
+      <div>
+        <h2 data-cy="metricSampleDetailsHeading"><span jhiTranslate="emsApp.metricSample.detail.title">Metric Sample</span></h2>
+
+        <hr />
+
+        <jhi-alert-error />
+
+        <jhi-alert />
+
+        <dl class="row-md jh-entity-details">
+          <dt><span jhiTranslate="global.field.id">ID</span></dt>
+          <dd>
+            <span>{{ metricSampleRef.id }}</span>
+          </dd>
+          <dt><span jhiTranslate="emsApp.metricSample.cpuUsage">Cpu Usage</span></dt>
+          <dd>
+            <span>{{ metricSampleRef.cpuUsage }}</span>
+          </dd>
+          <dt><span jhiTranslate="emsApp.metricSample.ramUsage">Ram Usage</span></dt>
+          <dd>
+            <span>{{ metricSampleRef.ramUsage }}</span>
+          </dd>
+          <dt><span jhiTranslate="emsApp.metricSample.diskUsage">Disk Usage</span></dt>
+          <dd>
+            <span>{{ metricSampleRef.diskUsage }}</span>
+          </dd>
+          <dt><span jhiTranslate="emsApp.metricSample.pingLatencyMs">Ping Latency Ms</span></dt>
+          <dd>
+            <span>{{ metricSampleRef.pingLatencyMs }}</span>
+          </dd>
+          <dt><span jhiTranslate="emsApp.metricSample.collectedAt">Collected At</span></dt>
+          <dd>
+            <span>{{ metricSampleRef.collectedAt | formatMediumDatetime }}</span>
+          </dd>
+          <dt><span jhiTranslate="emsApp.metricSample.device">Device</span></dt>
+          <dd>
+            @if (metricSample()!.device) {
+              <div>
+                <a [routerLink]="['/device', metricSample()!.device?.id, 'view']">{{ metricSampleRef.device?.name }}</a>
+              </div>
+            }
+          </dd>
+        </dl>
+
+        <button type="submit" (click)="previousState()" class="btn btn-info" data-cy="entityDetailsBackButton">
+          <fa-icon icon="arrow-left" />&nbsp;<span jhiTranslate="entity.action.back">Quay lại</span>
+        </button>
+
+        <button type="button" [routerLink]="['/metric-sample', metricSampleRef.id, 'edit']" class="btn btn-primary">
+          <fa-icon icon="pencil-alt" />&nbsp;<span jhiTranslate="entity.action.edit">Sửa</span>
+        </button>
+      </div>
+    }
+  </div>
+</div>
