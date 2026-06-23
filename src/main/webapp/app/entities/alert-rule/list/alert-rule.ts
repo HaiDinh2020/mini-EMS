@@ -11,8 +11,10 @@ import { Subscription, combineLatest, filter, tap } from 'rxjs';
 
 import { DEFAULT_SORT_DATA, ITEM_DELETED_EVENT, SORT } from 'app/config/navigation.constants';
 import { ITEMS_PER_PAGE, PAGE_HEADER, TOTAL_COUNT_RESPONSE_HEADER } from 'app/config/pagination.constants';
+import { AccountService } from 'app/core/auth/account.service';
 import { Alert } from 'app/shared/alert/alert';
 import { AlertError } from 'app/shared/alert/alert-error';
+import HasAnyAuthorityDirective from 'app/shared/auth/has-any-authority.directive';
 import { TranslateDirective } from 'app/shared/language';
 import { ItemCount } from 'app/shared/pagination';
 import { SortByDirective, SortDirective, SortService, type SortState, sortStateSignal } from 'app/shared/sort';
@@ -36,6 +38,7 @@ import { AlertRuleService } from '../service/alert-rule.service';
     TranslateModule,
     NgbPagination,
     ItemCount,
+    HasAnyAuthorityDirective,
   ],
 })
 export class AlertRule implements OnInit {
@@ -49,6 +52,7 @@ export class AlertRule implements OnInit {
   readonly page = signal(1);
 
   readonly router = inject(Router);
+  protected readonly accountService = inject(AccountService);
   protected readonly alertRuleService = inject(AlertRuleService);
   // eslint-disable-next-line @typescript-eslint/member-ordering
   readonly isLoading = this.alertRuleService.alertRulesResource.isLoading;

@@ -8,7 +8,7 @@ const alertRuleRoute: Routes = [
   {
     path: '',
     loadComponent: () => import('./list/alert-rule').then(m => m.AlertRule),
-    data: {},
+    data: { authorities: ['ROLE_USER', 'ROLE_ADMIN'] },
     canActivate: [UserRouteAccessService],
   },
   {
@@ -17,6 +17,7 @@ const alertRuleRoute: Routes = [
     resolve: {
       alertRule: AlertRuleResolve,
     },
+    data: { authorities: ['ROLE_USER', 'ROLE_ADMIN'] },
     canActivate: [UserRouteAccessService],
   },
   {
@@ -25,6 +26,7 @@ const alertRuleRoute: Routes = [
     resolve: {
       alertRule: AlertRuleResolve,
     },
+    data: { authorities: ['ROLE_ADMIN'] },
     canActivate: [UserRouteAccessService],
   },
   {
@@ -33,6 +35,7 @@ const alertRuleRoute: Routes = [
     resolve: {
       alertRule: AlertRuleResolve,
     },
+    data: { authorities: ['ROLE_ADMIN'] },
     canActivate: [UserRouteAccessService],
   },
 ];

@@ -7,16 +7,6 @@
         <fa-icon icon="sync" [animation]="isLoading() ? 'spin' : undefined" />
         <span jhiTranslate="emsApp.alertEvent.home.refreshListLabel">Refresh list</span>
       </button>
-
-      <button
-        id="jh-create-entity"
-        data-cy="entityCreateButton"
-        class="btn btn-primary jh-create-entity create-alert-event"
-        [routerLink]="['/alert-event/new']"
-      >
-        <fa-icon icon="plus" />
-        <span jhiTranslate="emsApp.alertEvent.home.createLabel">Thêm mới một Alert Event</span>
-      </button>
     </div>
   </h2>
 
@@ -36,56 +26,48 @@
             <th scope="col" jhiSortBy="id">
               <div class="d-flex">
                 <span jhiTranslate="global.field.id">ID</span>
-
-                <fa-icon class="p-1" icon="sort" />
-              </div>
-            </th>
-            <th scope="col" jhiSortBy="metricType">
-              <div class="d-flex">
-                <span jhiTranslate="emsApp.alertEvent.metricType">Metric Type</span>
-
-                <fa-icon class="p-1" icon="sort" />
-              </div>
-            </th>
-            <th scope="col" jhiSortBy="value">
-              <div class="d-flex">
-                <span jhiTranslate="emsApp.alertEvent.value">Value</span>
-
-                <fa-icon class="p-1" icon="sort" />
-              </div>
-            </th>
-            <th scope="col" jhiSortBy="severity">
-              <div class="d-flex">
-                <span jhiTranslate="emsApp.alertEvent.severity">Severity</span>
-
-                <fa-icon class="p-1" icon="sort" />
-              </div>
-            </th>
-            <th scope="col" jhiSortBy="message">
-              <div class="d-flex">
-                <span jhiTranslate="emsApp.alertEvent.message">Message</span>
-
-                <fa-icon class="p-1" icon="sort" />
-              </div>
-            </th>
-            <th scope="col" jhiSortBy="triggeredAt">
-              <div class="d-flex">
-                <span jhiTranslate="emsApp.alertEvent.triggeredAt">Triggered At</span>
-
-                <fa-icon class="p-1" icon="sort" />
-              </div>
-            </th>
-            <th scope="col" jhiSortBy="resolvedAt">
-              <div class="d-flex">
-                <span jhiTranslate="emsApp.alertEvent.resolvedAt">Resolved At</span>
-
                 <fa-icon class="p-1" icon="sort" />
               </div>
             </th>
             <th scope="col" jhiSortBy="status">
               <div class="d-flex">
                 <span jhiTranslate="emsApp.alertEvent.status">Status</span>
-
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="severity">
+              <div class="d-flex">
+                <span jhiTranslate="emsApp.alertEvent.severity">Severity</span>
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="metricType">
+              <div class="d-flex">
+                <span jhiTranslate="emsApp.alertEvent.metricType">Metric Type</span>
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="value">
+              <div class="d-flex">
+                <span jhiTranslate="emsApp.alertEvent.value">Value</span>
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="message">
+              <div class="d-flex">
+                <span jhiTranslate="emsApp.alertEvent.message">Message</span>
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="triggeredAt">
+              <div class="d-flex">
+                <span jhiTranslate="emsApp.alertEvent.triggeredAt">Triggered At</span>
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="resolvedAt">
+              <div class="d-flex">
+                <span jhiTranslate="emsApp.alertEvent.resolvedAt">Resolved At</span>
                 <fa-icon class="p-1" icon="sort" />
               </div>
             </th>
@@ -110,6 +92,27 @@
               <td>
                 <a [routerLink]="['/alert-event', alertEvent.id, 'view']">{{ alertEvent.id }}</a>
               </td>
+              <td>
+                <span
+                  class="badge"
+                  [class.bg-danger]="alertEvent.status === 'OPEN'"
+                  [class.bg-warning]="alertEvent.status === 'ACKNOWLEDGED'"
+                  [class.bg-success]="alertEvent.status === 'RESOLVED'"
+                  [jhiTranslate]="'emsApp.AlertStatus.' + (alertEvent.status ?? 'null')"
+                >
+                  {{ { null: '', OPEN: 'OPEN', ACKNOWLEDGED: 'ACKNOWLEDGED', RESOLVED: 'RESOLVED' }[alertEvent.status ?? 'null'] }}
+                </span>
+              </td>
+              <td>
+                <span
+                  class="badge"
+                  [class.bg-warning]="alertEvent.severity === 'WARNING'"
+                  [class.bg-danger]="alertEvent.severity === 'CRITICAL'"
+                  [jhiTranslate]="'emsApp.Severity.' + (alertEvent.severity ?? 'null')"
+                >
+                  {{ { null: '', WARNING: 'WARNING', CRITICAL: 'CRITICAL' }[alertEvent.severity ?? 'null'] }}
+                </span>
+              </td>
               <td [jhiTranslate]="'emsApp.MetricType.' + (alertEvent.metricType ?? 'null')">
                 {{
                   { null: '', CPU: 'CPU', RAM: 'RAM', DISK: 'DISK', PING_LATENCY: 'PING_LATENCY', AVAILABILITY: 'AVAILABILITY' }[
@@ -118,15 +121,9 @@
                 }}
               </td>
               <td>{{ alertEvent.value }}</td>
-              <td [jhiTranslate]="'emsApp.Severity.' + (alertEvent.severity ?? 'null')">
-                {{ { null: '', WARNING: 'WARNING', CRITICAL: 'CRITICAL' }[alertEvent.severity ?? 'null'] }}
-              </td>
               <td>{{ alertEvent.message }}</td>
               <td>{{ alertEvent.triggeredAt | formatMediumDatetime }}</td>
               <td>{{ alertEvent.resolvedAt | formatMediumDatetime }}</td>
-              <td [jhiTranslate]="'emsApp.AlertStatus.' + (alertEvent.status ?? 'null')">
-                {{ { null: '', OPEN: 'OPEN', ACKNOWLEDGED: 'ACKNOWLEDGED', RESOLVED: 'RESOLVED' }[alertEvent.status ?? 'null'] }}
-              </td>
               <td>
                 @if (alertEvent.device) {
                   <div>
@@ -148,12 +145,25 @@
                     <span class="d-none d-md-inline" jhiTranslate="entity.action.view">Xem</span>
                   </a>
 
-                  <a [routerLink]="['/alert-event', alertEvent.id, 'edit']" class="btn btn-primary btn-sm" data-cy="entityEditButton">
-                    <fa-icon icon="pencil-alt" />
-                    <span class="d-none d-md-inline" jhiTranslate="entity.action.edit">Sửa</span>
-                  </a>
+                  @if (alertEvent.status === 'OPEN') {
+                    <button
+                      type="button"
+                      (click)="acknowledge(alertEvent)"
+                      class="btn btn-warning btn-sm"
+                      data-cy="entityAcknowledgeButton"
+                    >
+                      <fa-icon icon="check" />
+                      <span class="d-none d-md-inline">Acknowledge</span>
+                    </button>
+                  }
 
-                  <button type="submit" (click)="delete(alertEvent)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton">
+                  <button
+                    *jhiHasAnyAuthority="'ROLE_ADMIN'"
+                    type="submit"
+                    (click)="delete(alertEvent)"
+                    class="btn btn-danger btn-sm"
+                    data-cy="entityDeleteButton"
+                  >
                     <fa-icon icon="times" />
                     <span class="d-none d-md-inline" jhiTranslate="entity.action.delete">Xóa</span>
                   </button>

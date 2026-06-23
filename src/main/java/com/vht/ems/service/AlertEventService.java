@@ -58,6 +58,14 @@ public interface AlertEventService {
     Optional<AlertEventDTO> findOne(String id);
 
     /**
+     * Acknowledge an alert event (OPEN → ACKNOWLEDGED).
+     *
+     * @param id the id of the entity.
+     * @return the updated entity, or empty if not found or not in OPEN state.
+     */
+    Optional<AlertEventDTO> acknowledge(String id);
+
+    /**
      * Delete the "id" alertEvent.
      *
      * @param id the id of the entity.

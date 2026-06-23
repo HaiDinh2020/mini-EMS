@@ -37,6 +37,9 @@ public class AlertRule implements Serializable {
     @Field("enabled")
     private Boolean enabled;
 
+    @Field("device_id")
+    private String deviceId;
+
     // jhipster-needle-entity-add-field - JHipster will add fields here
 
     public String getId() {
@@ -102,6 +105,19 @@ public class AlertRule implements Serializable {
 
     public void setEnabled(Boolean enabled) {
         this.enabled = enabled;
+    }
+
+    public String getDeviceId() {
+        return this.deviceId;
+    }
+
+    public AlertRule deviceId(String deviceId) {
+        this.setDeviceId(deviceId);
+        return this;
+    }
+
+    public void setDeviceId(String deviceId) {
+        this.deviceId = deviceId;
     }
 
     // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here

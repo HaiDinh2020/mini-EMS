@@ -89,6 +89,12 @@ export class AlertEventService extends AlertEventsService {
       .pipe(map(res => res.clone({ body: this.convertResponseArrayFromServer(res.body!) })));
   }
 
+  acknowledge(id: string): Observable<IAlertEvent> {
+    return this.http
+      .put<RestAlertEvent>(`${this.resourceUrl}/${encodeURIComponent(id)}/acknowledge`, {})
+      .pipe(map(res => this.convertResponseFromServer(res)));
+  }
+
   delete(id: string): Observable<undefined> {
     return this.http.delete<undefined>(`${this.resourceUrl}/${encodeURIComponent(id)}`);
   }

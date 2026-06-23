@@ -25,6 +25,8 @@ public class AlertRuleDTO implements Serializable {
     @NotNull
     private Boolean enabled;
 
+    private String deviceId;
+
     public String getId() {
         return id;
     }
@@ -63,6 +65,14 @@ public class AlertRuleDTO implements Serializable {
 
     public void setEnabled(Boolean enabled) {
         this.enabled = enabled;
+    }
+
+    public String getDeviceId() {
+        return deviceId;
+    }
+
+    public void setDeviceId(String deviceId) {
+        this.deviceId = deviceId;
     }
 
     @Override

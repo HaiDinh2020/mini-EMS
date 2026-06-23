@@ -1,15 +1,12 @@
 package com.vht.ems.web.rest;
 
 import com.vht.ems.repository.AlertEventRepository;
+import com.vht.ems.security.AuthoritiesConstants;
 import com.vht.ems.service.AlertEventService;
 import com.vht.ems.service.dto.AlertEventDTO;
 import com.vht.ems.web.rest.errors.BadRequestAlertException;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,6 +15,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import tech.jhipster.web.util.HeaderUtil;
@@ -48,101 +46,14 @@ public class AlertEventResource {
     }
 
     /**
-     * {@code POST  /alert-events} : Create a new alertEvent.
-     *
-     * @param alertEventDTO the alertEventDTO to create.
-     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new alertEventDTO, or with status {@code 400 (Bad Request)} if the alertEvent has already an ID.
-     * @throws URISyntaxException if the Location URI syntax is incorrect.
-     */
-    @PostMapping("")
-    public ResponseEntity<AlertEventDTO> createAlertEvent(@Valid @RequestBody AlertEventDTO alertEventDTO) throws URISyntaxException {
-        LOG.debug("REST request to save AlertEvent : {}", alertEventDTO);
-        if (alertEventDTO.getId() != null) {
-            throw new BadRequestAlertException("A new alertEvent cannot already have an ID", ENTITY_NAME, "idexists");
-        }
-        alertEventDTO = alertEventService.save(alertEventDTO);
-        return ResponseEntity.created(new URI("/api/alert-events/" + alertEventDTO.getId()))
-            .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, alertEventDTO.getId()))
-            .body(alertEventDTO);
-    }
-
-    /**
-     * {@code PUT  /alert-events/:id} : Updates an existing alertEvent.
-     *
-     * @param id the id of the alertEventDTO to save.
-     * @param alertEventDTO the alertEventDTO to update.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated alertEventDTO,
-     * or with status {@code 400 (Bad Request)} if the alertEventDTO is not valid,
-     * or with status {@code 500 (Internal Server Error)} if the alertEventDTO couldn't be updated.
-     * @throws URISyntaxException if the Location URI syntax is incorrect.
-     */
-    @PutMapping("/{id}")
-    public ResponseEntity<AlertEventDTO> updateAlertEvent(
-        @PathVariable(value = "id", required = false) final String id,
-        @Valid @RequestBody AlertEventDTO alertEventDTO
-    ) throws URISyntaxException {
-        LOG.debug("REST request to update AlertEvent : {}, {}", id, alertEventDTO);
-        if (alertEventDTO.getId() == null) {
-            throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
-        }
-        if (!Objects.equals(id, alertEventDTO.getId())) {
-            throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
-        }
-
-        if (!alertEventRepository.existsById(id)) {
-            throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
-        }
-
-        alertEventDTO = alertEventService.update(alertEventDTO);
-        return ResponseEntity.ok()
-            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, alertEventDTO.getId()))
-            .body(alertEventDTO);
-    }
-
-    /**
-     * {@code PATCH  /alert-events/:id} : Partial updates given fields of an existing alertEvent, field will ignore if it is null
-     *
-     * @param id the id of the alertEventDTO to save.
-     * @param alertEventDTO the alertEventDTO to update.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated alertEventDTO,
-     * or with status {@code 400 (Bad Request)} if the alertEventDTO is not valid,
-     * or with status {@code 404 (Not Found)} if the alertEventDTO is not found,
-     * or with status {@code 500 (Internal Server Error)} if the alertEventDTO couldn't be updated.
-     * @throws URISyntaxException if the Location URI syntax is incorrect.
-     */
-    @PatchMapping(value = "/{id}", consumes = { "application/json", "application/merge-patch+json" })
-    public ResponseEntity<AlertEventDTO> partialUpdateAlertEvent(
-        @PathVariable(value = "id", required = false) final String id,
-        @NotNull @RequestBody AlertEventDTO alertEventDTO
-    ) throws URISyntaxException {
-        LOG.debug("REST request to partial update AlertEvent partially : {}, {}", id, alertEventDTO);
-        if (alertEventDTO.getId() == null) {
-            throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
-        }
-        if (!Objects.equals(id, alertEventDTO.getId())) {
-            throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
-        }
-
-        if (!alertEventRepository.existsById(id)) {
-            throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
-        }
-
-        Optional<AlertEventDTO> result = alertEventService.partialUpdate(alertEventDTO);
-
-        return ResponseUtil.wrapOrNotFound(
-            result,
-            HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, alertEventDTO.getId())
-        );
-    }
-
-    /**
      * {@code GET  /alert-events} : get all the Alert Events.
      *
      * @param pageable the pagination information.
-     * @param eagerload flag to eager load entities from relationships (This is applicable for many-to-many).
+     * @param eagerload flag to eager load entities from relationships.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of Alert Events in body.
      */
     @GetMapping("")
+    @PreAuthorize("hasAnyAuthority(\"" + AuthoritiesConstants.ADMIN + "\", \"" + AuthoritiesConstants.USER + "\")")
     public ResponseEntity<List<AlertEventDTO>> getAllAlertEvents(
         @org.springdoc.core.annotations.ParameterObject Pageable pageable,
         @RequestParam(name = "eagerload", required = false, defaultValue = "true") boolean eagerload
@@ -165,6 +76,7 @@ public class AlertEventResource {
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the alertEventDTO, or with status {@code 404 (Not Found)}.
      */
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority(\"" + AuthoritiesConstants.ADMIN + "\", \"" + AuthoritiesConstants.USER + "\")")
     public ResponseEntity<AlertEventDTO> getAlertEvent(@PathVariable("id") String id) {
         LOG.debug("REST request to get AlertEvent : {}", id);
         Optional<AlertEventDTO> alertEventDTO = alertEventService.findOne(id);
@@ -172,12 +84,30 @@ public class AlertEventResource {
     }
 
     /**
-     * {@code DELETE  /alert-events/:id} : delete the "id" alertEvent.
+     * {@code PUT  /alert-events/:id/acknowledge} : Acknowledge an OPEN alert event.
+     *
+     * @param id the id of the alertEventDTO to acknowledge.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and updated alertEventDTO, or {@code 404 (Not Found)}.
+     */
+    @PutMapping("/{id}/acknowledge")
+    @PreAuthorize("hasAnyAuthority(\"" + AuthoritiesConstants.ADMIN + "\", \"" + AuthoritiesConstants.USER + "\")")
+    public ResponseEntity<AlertEventDTO> acknowledgeAlertEvent(@PathVariable("id") String id) {
+        LOG.debug("REST request to acknowledge AlertEvent : {}", id);
+        if (!alertEventRepository.existsById(id)) {
+            throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
+        }
+        Optional<AlertEventDTO> result = alertEventService.acknowledge(id);
+        return ResponseUtil.wrapOrNotFound(result, HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, id));
+    }
+
+    /**
+     * {@code DELETE  /alert-events/:id} : delete the "id" alertEvent (Admin only).
      *
      * @param id the id of the alertEventDTO to delete.
      * @return the {@link ResponseEntity} with status {@code 204 (NO_CONTENT)}.
      */
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.ADMIN + "\")")
     public ResponseEntity<Void> deleteAlertEvent(@PathVariable("id") String id) {
         LOG.debug("REST request to delete AlertEvent : {}", id);
         alertEventService.delete(id);

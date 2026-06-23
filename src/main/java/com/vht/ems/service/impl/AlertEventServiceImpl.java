@@ -77,6 +77,19 @@ public class AlertEventServiceImpl implements AlertEventService {
     }
 
     @Override
+    public Optional<AlertEventDTO> acknowledge(String id) {
+        LOG.debug("Request to acknowledge AlertEvent : {}", id);
+        return alertEventRepository
+            .findById(id)
+            .filter(e -> e.getStatus() == com.vht.ems.domain.enumeration.AlertStatus.OPEN)
+            .map(e -> {
+                e.setStatus(com.vht.ems.domain.enumeration.AlertStatus.ACKNOWLEDGED);
+                return alertEventRepository.save(e);
+            })
+            .map(alertEventMapper::toDto);
+    }
+
+    @Override
     public void delete(String id) {
         LOG.debug("Request to delete AlertEvent : {}", id);
         alertEventRepository.deleteById(id);

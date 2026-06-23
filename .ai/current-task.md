@@ -1,127 +1,178 @@
 # Current Task
 
-## Sprint hiện tại: Sprint 1 – CRUD & RBAC
+## Sprint hiện tại: Sprint 3 – Alert + Audit + WebSocket
 
-### Mục tiêu Sprint 1
-Hoàn thiện CRUD Device/Credential theo domain spec, bảo mật secret bằng Jasypt, phân quyền Admin/User đúng spec, seed dữ liệu demo 5 node 5G Core.
+### Mục tiêu Sprint 3
+Triển khai Alert Engine (so ngưỡng → sinh AlertEvent, tự resolve), CRUD AlertRule có RBAC, AOP AuditLog ghi nhận mọi thao tác CRUD nghiệp vụ, và WebSocket STOMP để push realtime device-status / alert tới Dashboard.
 
-**Tiền đề:** Sprint 0 đã xong (JHipster init, JDL entities, git, docker-compose skeleton, smoke test).
+**Tiền đề:** Sprint 2 đã xong (TCP reachability, SSH collector, parser CPU/RAM/Disk, `@Scheduled` mỗi 60s, lưu `MetricSample`, cập nhật `Device.status` + `lastCheckedAt`).
 
 ---
 
 ## TODO ngay (theo thứ tự)
 
-### 1. Device – validation & business defaults
-Tham chiếu: `.ai/domain/device.md`
+### 1. AlertRule – CRUD + RBAC
+Tham chiếu: `.ai/domain/alert.md`
 
 **Backend**
-- [ ] Thêm `@Pattern` IPv4 cho `ipAddress` trên `Device` + `DeviceDTO`:
+- [x] Kiểm tra entity `AlertRule` đã đúng spec (`deviceId` nullable, `enabled`, `thresholdWarning`, `thresholdCritical`, `metricType`)
+- [x] `AlertRuleResource`: áp `@PreAuthorize` đúng spec
+  - GET (list, detail): `hasAnyAuthority('ROLE_ADMIN', 'ROLE_USER')`
+  - POST, PUT, DELETE: `hasAuthority('ROLE_ADMIN')`
+- [x] Repository: thêm query `findEnabledRulesForDevices(List<String> deviceIds)` (MongoDB `$or` query)
+- [x] Seed 3 `AlertRule` mặc định qua `AlertRuleSeederMigration` (Mongock order 002):
+  - CPU: warning 85%, critical 95%
+  - RAM: warning 80%, critical 90%
+  - Disk: warning 75%, critical 90%
+
+**Frontend**
+- [x] Trang `alert-rule` list: ẩn nút Create/Edit/Delete khi không có `ROLE_ADMIN` (`*jhiHasAnyAuthority`)
+- [x] Route guard: `new/edit` yêu cầu `['ROLE_ADMIN']`
+
+**Done khi:** Admin tạo/sửa/xóa AlertRule; User chỉ xem.
+
+---
+
+### 2. Alert Engine – `AlertEvaluatorService`
+Tham chiếu: `.ai/domain/alert.md`
+
+**Backend**
+- [ ] Tạo `AlertEvaluatorService.evaluate(device, metricSample)`:
+  - Lấy danh sách `AlertRule` enabled cho device (device-specific + global)
+  - So sánh value với `thresholdCritical` → `thresholdWarning`
+  - Gọi `createOrUpdate(device, rule, severity, value)` hoặc `autoResolve(device, rule)`
+- [ ] `createOrUpdate` logic:
+  - Tìm `AlertEvent` đang OPEN theo `(deviceId, ruleId)`
+  - Nếu chưa có → tạo mới, set `status=OPEN`, `triggeredAt=now()`
+  - Nếu có, severity thay đổi → update severity
+  - Nếu có, severity giống → chỉ update `value` + `triggeredAt`
+  - Sau khi save → broadcast `/topic/alerts` qua `SimpMessagingTemplate`
+- [ ] `autoResolve` logic:
+  - Tìm `AlertEvent` OPEN theo `(deviceId, ruleId)` 
+  - Nếu tồn tại → set `status=RESOLVED`, `resolvedAt=now()`, save + broadcast
+- [ ] Thêm query trong `AlertEventRepository`:
   ```java
-  @Pattern(regexp = "^((25[0-5]|2[0-4]\\d|[01]?\\d\\d?)\\.){3}(25[0-5]|2[0-4]\\d|[01]?\\d\\d?)$")
+  Optional<AlertEvent> findByDeviceIdAndRuleIdAndStatus(String deviceId, String ruleId, AlertStatus status);
+  List<AlertEvent> findByDeviceIdAndStatus(String deviceId, AlertStatus status);
+  long countByStatusAndSeverity(AlertStatus status, Severity severity);
   ```
-- [ ] Trong `DeviceServiceImpl.save()`: set default nếu null
-  - `status = UNKNOWN`
-  - `monitoringEnabled = true`
-  - `sshPort = 22`
-- [ ] Unique `ipAddress`: thêm `existsByIpAddress` trong `DeviceRepository`, throw `BadRequestAlertException` khi trùng
-- [ ] `DeviceDTO`: chỉ trả `credentialId`, không embed full `Credential` (cập nhật `DeviceMapper` nếu cần)
-
-**Frontend**
-- [ ] Form create/edit: validate IP client-side (pattern tương tự)
-- [ ] Ẩn/disable nút Create/Edit/Delete cho user không có `ROLE_ADMIN`
+- [ ] `DeviceCollectorService` gọi `alertEvaluatorService.evaluate(device, metricSample)` sau khi lưu MetricSample
 
 **Test**
-- [ ] `DeviceResourceIT`: POST IP invalid → 400; POST IP trùng → 400; POST hợp lệ → defaults đúng
+- [ ] Unit test `AlertEvaluatorService`: value vượt critical → tạo AlertEvent CRITICAL; value giảm về bình thường → auto-resolve; severity đổi từ WARNING → CRITICAL → update đúng
 
-**Done khi:** Admin tạo device qua UI/API với IP sai bị reject; device mới có status UNKNOWN.
+**Done khi:** Collector chạy, metric vượt ngưỡng → AlertEvent tự sinh; metric hạ xuống → tự resolve.
 
 ---
 
-### 2. Credential – Jasypt encrypt/decrypt
-Tham chiếu: `.ai/domain/security.md`
+### 3. AlertEvent – REST API + Acknowledge
+Tham chiếu: `.ai/domain/alert.md`
 
 **Backend**
-- [ ] Thêm dependency Jasypt (`jasypt-spring-boot-starter` hoặc `org.jasypt:jasypt`)
-- [ ] Cấu hình `StandardPBEStringEncryptor` bean, password từ env `JASYPT_ENCRYPTOR_PASSWORD`
-- [ ] Refactor `CredentialDTO`:
-  - Xóa `encryptedSecret` khỏi response
-  - Thêm `plainSecret` với `@JsonProperty(access = WRITE_ONLY)`
-- [ ] `CredentialServiceImpl`: encrypt trước khi save, decrypt qua method `decryptSecret(id)` (chỉ dùng nội bộ, không expose API)
-- [ ] Không log `plainSecret` / decrypted value
+- [ ] `AlertEventResource`:
+  - `GET /api/alert-events`: filter theo `status`, `severity`, `deviceId` (dùng query params)
+  - `GET /api/alert-events/{id}`: chi tiết
+  - `PUT /api/alert-events/{id}/acknowledge`: chuyển `OPEN → ACKNOWLEDGED` (auth: USER)
+- [ ] `@PreAuthorize`:
+  - GET: `hasAnyAuthority('ROLE_ADMIN', 'ROLE_USER')`
+  - PUT acknowledge: `hasAnyAuthority('ROLE_ADMIN', 'ROLE_USER')`
+  - Không expose POST/DELETE (AlertEvent chỉ do engine sinh)
+- [ ] Payload WebSocket khi broadcast:
+  ```json
+  {
+    "type": "ALERT_EVENT",
+    "alertEventId": "...",
+    "deviceId": "...",
+    "deviceName": "...",
+    "metricType": "RAM",
+    "severity": "CRITICAL",
+    "value": 91.5,
+    "message": "RAM usage 91.5% exceeds critical threshold 90%",
+    "status": "OPEN",
+    "timestamp": "..."
+  }
+  ```
 
 **Frontend**
-- [ ] Form credential: field "Secret" (password input), không hiển thị encrypted value
-- [ ] List/detail: bỏ cột/field `encryptedSecret`
+- [ ] Trang `alert-event` list: hiển thị status badge (OPEN=đỏ, ACKNOWLEDGED=vàng, RESOLVED=xanh), filter theo status/severity
+- [ ] Nút "Acknowledge" trong list/detail (USER và ADMIN đều dùng được)
 
-**Test**
-- [ ] `CredentialResourceIT`: response GET không chứa secret; POST với plainSecret → DB lưu dạng encrypted
-
-**Done khi:** API không bao giờ trả secret; decrypt chỉ qua service method nội bộ.
+**Done khi:** User thấy danh sách alert; bấm Acknowledge → badge chuyển màu tức thì.
 
 ---
 
-### 3. RBAC – `@PreAuthorize` backend + route guard frontend
-Tham chiếu: `.ai/domain/security.md`, `.ai/domain/device.md`
+### 4. AOP AuditLog
+Tham chiếu: `.ai/domain/audit.md`
 
-**Backend** — áp dụng cho `DeviceResource`, `CredentialResource`, `AlertRuleResource`, `TopologyLinkResource`:
+**Backend**
+- [ ] Tạo `AuditAspect` (`@Aspect @Component`) trong `com.vht.ems.aop`:
+  - Pointcut bắt `create*`, `update*`, `delete*` trong `DeviceResource`, `AlertRuleResource`, `CredentialResource`
+  - Dùng `@AfterReturning` để lấy kết quả trả về
+  - Lấy `username` từ `SecurityUtils.getCurrentUserLogin()`
+  - Map method name → action (`CREATE` / `UPDATE` / `DELETE`)
+  - Build `detail` JSON ngắn từ args/result — **KHÔNG chứa** `encryptedSecret`, SSH private key, password plaintext
+  - Lưu `AuditLog` qua `AuditLogRepository`
+- [ ] `AuditLogResource` (chỉ ADMIN):
+  - `GET /api/admin/audit-logs`: pagination, filter `username`, `action`, `entityName`, `from`, `to` (dùng `MongoTemplate + Criteria`)
+  - Không expose PUT/DELETE (append-only)
+- [ ] `@PreAuthorize("hasAuthority('ROLE_ADMIN')")` cho toàn bộ `AuditLogResource`
 
-| Method | Annotation |
-|---|---|
-| GET (list, detail) | `@PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_USER')")` |
-| POST, PUT, PATCH, DELETE | `@PreAuthorize("hasAuthority('ROLE_ADMIN')")` |
+**Test**
+- [ ] Unit/integration test: gọi `POST /api/devices` → `audit_logs` có 1 document với `action=CREATE`, `entityName=Device`, đúng `username`
+- [ ] Xác nhận: gọi `POST /api/credentials` → `detail` KHÔNG chứa field secret
 
-- [ ] Dùng `AuthoritiesConstants.ADMIN` / `USER` thay vì string literal (nhất quán với `UserResource`)
-- [ ] Bật `@EnableMethodSecurity` nếu chưa có
+**Done khi:** Mọi CRUD Device/Credential/AlertRule đều sinh AuditLog; Admin xem được qua API.
+
+---
+
+### 5. WebSocket STOMP – topic nghiệp vụ
+Tham chiếu: `.ai/backend/websocket.md`
+
+**Backend**
+- [ ] Inject `SimpMessagingTemplate` vào `AlertEvaluatorService` và `DeviceCollectorService`
+- [ ] `DeviceCollectorService` publish `/topic/device-status` sau cập nhật:
+  ```json
+  { "deviceId": "...", "name": "node-amf", "status": "ONLINE", "lastCheckedAt": "..." }
+  ```
+- [ ] `AlertEvaluatorService` publish `/topic/alerts` sau create/update/resolve AlertEvent (payload theo spec trên)
+- [ ] **Không** gọi `SimpMessagingTemplate` từ Controller — chỉ gọi từ service layer
+- [ ] Không tạo topic riêng cho Credential / AuditLog
 
 **Frontend**
-- [ ] `device.routes.ts`, `credential.routes.ts`: thêm `data: { authorities: [...] }`
-  - List/view: `['ROLE_USER', 'ROLE_ADMIN']`
-  - new/edit: `['ROLE_ADMIN']`
-- [ ] Ẩn action buttons trong list component theo role (`HasAnyAuthorityDirective`)
+- [ ] Service `WebsocketService` (hoặc tận dụng service JHipster có sẵn): subscribe `/topic/device-status` và `/topic/alerts` khi vào Dashboard
+- [ ] Unsubscribe khi rời trang (tránh memory leak)
+- [ ] Khi nhận message `/topic/device-status`: cập nhật status badge của device tương ứng trong danh sách (không reload trang)
+- [ ] Khi nhận message `/topic/alerts`: hiển thị toast/banner alert mới hoặc cập nhật badge số alert đang OPEN
 
-**Test**
-- [ ] Integration test: USER gọi POST `/api/devices` → 403; GET → 200
-
-**Done khi:** User thường chỉ đọc được; Admin full CRUD.
+**Done khi:** Không cần reload, status device + alert cập nhật ngay khi collector chạy xong.
 
 ---
 
-### 4. Seed data mẫu
-Tham chiếu: `.ai/database/jdl.md`, `.ai/backend/deployment.md`
-
-- [ ] Tạo `config/DataSeeder.java` implements `ApplicationRunner` (profile `dev` + `prod` hoặc flag `EMS_SEED_ENABLED=true`)
-- [ ] Chỉ seed khi collection `device` rỗng (idempotent)
-- [ ] Seed nội dung:
-  - 1 `Credential` (authType PASSWORD, secret encrypt qua Jasypt)
-  - 5 `Device`: gNodeB, AMF, SMF, UPF, UDM — IP nội bộ Docker (`172.28.0.11`–`.15`), `deviceType` tương ứng, gắn credential
-  - (Optional) 2–3 `AlertRule` mặc định (CPU/RAM warning 70%, critical 90%)
-- [ ] Admin user: JHipster đã có — document default login trong README (`admin` / `admin`)
-
-**Done khi:** App khởi động lần đầu → `/api/devices` trả 5 device 5G Core.
-
----
-
-### 5. Sprint 1 review checklist
-- [ ] `./mvnw test` pass
-- [ ] Login admin → CRUD device/credential OK
-- [ ] Login user → chỉ xem list, không tạo/sửa/xóa
-- [ ] Swagger `/swagger-ui` phản ánh đúng auth requirement
-- [ ] Cập nhật README: env vars (`JASYPT_ENCRYPTOR_PASSWORD`, `JWT_SECRET`, `SPRING_MONGODB_URI`), default accounts
+### 6. Sprint 3 review checklist
+- [ ] `./mvnw test` pass (bao gồm unit test AlertEvaluatorService + AuditAspect)
+- [ ] Collector chạy → metric vượt ngưỡng → AlertEvent CRITICAL xuất hiện trong `GET /api/alert-events`
+- [ ] AlertEvent tự RESOLVED khi metric hạ về bình thường
+- [ ] User bấm Acknowledge → status chuyển đúng
+- [ ] CRUD Device/AlertRule/Credential → AuditLog có record tương ứng
+- [ ] `GET /api/admin/audit-logs?action=CREATE` → trả về đúng danh sách
+- [ ] WebSocket: mở Dashboard, collector chạy → status device cập nhật không reload
+- [ ] AuditLog: không lộ secret trong field `detail`
+- [ ] Swagger phản ánh đúng endpoint `/api/alert-rules`, `/api/alert-events`, `/api/admin/audit-logs`
 
 ---
 
 ## Blocked / Cần quyết định
-- [ ] Cascade delete Device → MetricSample/AlertEvent: hard delete hay soft delete? (đề xuất: hard delete cho Sprint 1)
+- [ ] AlertEvent acknowledge: chỉ user tạo request hay bất kỳ USER/ADMIN? (đề xuất: bất kỳ USER/ADMIN)
+- [ ] Khi device bị DELETE, AlertEvent liên quan xử lý thế nào? (đề xuất: giữ nguyên, deviceId vẫn ghi lịch sử)
 
 ---
 
-## Upcoming (Sprint 2 – Collector)
-- TCP reachability check (không ICMP — ADR-04)
-- SSH client (sshj) lấy CPU/RAM/Disk
-- Parser pure function + unit test
-- `@Scheduled` collector job mỗi 60s (`ems.collector.interval-ms`)
-- Cập nhật `Device.status` + `lastCheckedAt`
-- Lưu `MetricSample` time-series
+## Upcoming (Sprint 4 – Dashboard UI)
+- Dashboard Angular: tổng số device online/offline/unknown
+- Biểu đồ metric CPU/RAM/Disk theo thời gian (Chart.js / ngx-charts)
+- Alert banner realtime + badge đếm OPEN alerts
+- Trang Admin xem Audit Log với filter/pagination
+- Trang Topology (nếu Sprint 5 chưa làm)
 
 ---
 
@@ -136,3 +187,6 @@ Tham chiếu: `.ai/database/jdl.md`, `.ai/backend/deployment.md`
 | 2026-06-22 | MongoDB **7.0-community**, dev dùng Docker MongoDB |
 | 2026-06-22 | Seed mechanism: `ApplicationRunner` (cách 2 trong `database/jdl.md`) |
 | 2026-06-22 | IP seed 5G nodes: subnet `172.28.0.0/24`, nodes `.11`–`.15` |
+| 2026-06-23 | Sprint 1 done: Device/Credential CRUD, Jasypt, @PreAuthorize, seed 5 node 5G Core |
+| 2026-06-23 | Sprint 2 done: TCP reachability, SSH collector (sshj), parser CPU/RAM/Disk, @Scheduled 60s, MetricSample time-series |
+| 2026-06-23 | Sprint 3 done: AlertRule RBAC + seed, AlertEvaluatorService, AlertEvent acknowledge, AuditAspect, WebSocket STOMP config |

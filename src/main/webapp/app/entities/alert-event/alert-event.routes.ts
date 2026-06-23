@@ -8,7 +8,7 @@ const alertEventRoute: Routes = [
   {
     path: '',
     loadComponent: () => import('./list/alert-event').then(m => m.AlertEvent),
-    data: {},
+    data: { authorities: ['ROLE_USER', 'ROLE_ADMIN'] },
     canActivate: [UserRouteAccessService],
   },
   {
@@ -17,22 +17,7 @@ const alertEventRoute: Routes = [
     resolve: {
       alertEvent: AlertEventResolve,
     },
-    canActivate: [UserRouteAccessService],
-  },
-  {
-    path: 'new',
-    loadComponent: () => import('./update/alert-event-update').then(m => m.AlertEventUpdate),
-    resolve: {
-      alertEvent: AlertEventResolve,
-    },
-    canActivate: [UserRouteAccessService],
-  },
-  {
-    path: ':id/edit',
-    loadComponent: () => import('./update/alert-event-update').then(m => m.AlertEventUpdate),
-    resolve: {
-      alertEvent: AlertEventResolve,
-    },
+    data: { authorities: ['ROLE_USER', 'ROLE_ADMIN'] },
     canActivate: [UserRouteAccessService],
   },
 ];

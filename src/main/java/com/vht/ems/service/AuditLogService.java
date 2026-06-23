@@ -1,6 +1,7 @@
 package com.vht.ems.service;
 
 import com.vht.ems.service.dto.AuditLogDTO;
+import java.time.Instant;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -40,6 +41,19 @@ public interface AuditLogService {
      * @return the list of entities.
      */
     Page<AuditLogDTO> findAll(Pageable pageable);
+
+    /**
+     * Get audit logs with optional filters.
+     *
+     * @param username filter by username (optional)
+     * @param action   filter by action (optional)
+     * @param entityName filter by entity name (optional)
+     * @param from     filter from timestamp (optional)
+     * @param to       filter to timestamp (optional)
+     * @param pageable the pagination information.
+     * @return the list of entities.
+     */
+    Page<AuditLogDTO> findWithFilters(String username, String action, String entityName, Instant from, Instant to, Pageable pageable);
 
     /**
      * Get the "id" auditLog.

@@ -1,6 +1,7 @@
 package com.vht.ems.web.rest;
 
 import com.vht.ems.repository.AlertRuleRepository;
+import com.vht.ems.security.AuthoritiesConstants;
 import com.vht.ems.service.AlertRuleService;
 import com.vht.ems.service.dto.AlertRuleDTO;
 import com.vht.ems.web.rest.errors.BadRequestAlertException;
@@ -18,6 +19,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import tech.jhipster.web.util.HeaderUtil;
@@ -55,6 +57,7 @@ public class AlertRuleResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PostMapping("")
+    @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.ADMIN + "\")")
     public ResponseEntity<AlertRuleDTO> createAlertRule(@Valid @RequestBody AlertRuleDTO alertRuleDTO) throws URISyntaxException {
         LOG.debug("REST request to save AlertRule : {}", alertRuleDTO);
         if (alertRuleDTO.getId() != null) {
@@ -77,6 +80,7 @@ public class AlertRuleResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PutMapping("/{id}")
+    @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.ADMIN + "\")")
     public ResponseEntity<AlertRuleDTO> updateAlertRule(
         @PathVariable(value = "id", required = false) final String id,
         @Valid @RequestBody AlertRuleDTO alertRuleDTO
@@ -111,6 +115,7 @@ public class AlertRuleResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PatchMapping(value = "/{id}", consumes = { "application/json", "application/merge-patch+json" })
+    @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.ADMIN + "\")")
     public ResponseEntity<AlertRuleDTO> partialUpdateAlertRule(
         @PathVariable(value = "id", required = false) final String id,
         @NotNull @RequestBody AlertRuleDTO alertRuleDTO
@@ -142,6 +147,7 @@ public class AlertRuleResource {
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of Alert Rules in body.
      */
     @GetMapping("")
+    @PreAuthorize("hasAnyAuthority(\"" + AuthoritiesConstants.ADMIN + "\", \"" + AuthoritiesConstants.USER + "\")")
     public ResponseEntity<List<AlertRuleDTO>> getAllAlertRules(@org.springdoc.core.annotations.ParameterObject Pageable pageable) {
         LOG.debug("REST request to get a page of AlertRules");
         Page<AlertRuleDTO> page = alertRuleService.findAll(pageable);
@@ -156,6 +162,7 @@ public class AlertRuleResource {
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the alertRuleDTO, or with status {@code 404 (Not Found)}.
      */
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority(\"" + AuthoritiesConstants.ADMIN + "\", \"" + AuthoritiesConstants.USER + "\")")
     public ResponseEntity<AlertRuleDTO> getAlertRule(@PathVariable("id") String id) {
         LOG.debug("REST request to get AlertRule : {}", id);
         Optional<AlertRuleDTO> alertRuleDTO = alertRuleService.findOne(id);
@@ -169,6 +176,7 @@ public class AlertRuleResource {
      * @return the {@link ResponseEntity} with status {@code 204 (NO_CONTENT)}.
      */
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.ADMIN + "\")")
     public ResponseEntity<Void> deleteAlertRule(@PathVariable("id") String id) {
         LOG.debug("REST request to delete AlertRule : {}", id);
         alertRuleService.delete(id);

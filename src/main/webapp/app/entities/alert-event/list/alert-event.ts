@@ -1,5 +1,5 @@
 import { HttpHeaders } from '@angular/common/http';
-import { ChangeDetectionStrategy, Component, OnInit, effect, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, effect, inject, signal, ChangeDetectorRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Data, ParamMap, Router, RouterLink } from '@angular/router';
 
@@ -11,8 +11,10 @@ import { Subscription, combineLatest, filter, tap } from 'rxjs';
 
 import { DEFAULT_SORT_DATA, ITEM_DELETED_EVENT, SORT } from 'app/config/navigation.constants';
 import { ITEMS_PER_PAGE, PAGE_HEADER, TOTAL_COUNT_RESPONSE_HEADER } from 'app/config/pagination.constants';
+import { AccountService } from 'app/core/auth/account.service';
 import { Alert } from 'app/shared/alert/alert';
 import { AlertError } from 'app/shared/alert/alert-error';
+import HasAnyAuthorityDirective from 'app/shared/auth/has-any-authority.directive';
 import { FormatMediumDatetimePipe } from 'app/shared/date';
 import { TranslateDirective } from 'app/shared/language';
 import { ItemCount } from 'app/shared/pagination';
@@ -38,6 +40,7 @@ import { AlertEventService } from '../service/alert-event.service';
     FormatMediumDatetimePipe,
     NgbPagination,
     ItemCount,
+    HasAnyAuthorityDirective,
   ],
 })
 export class AlertEvent implements OnInit {
@@ -51,6 +54,7 @@ export class AlertEvent implements OnInit {
   readonly page = signal(1);
 
   readonly router = inject(Router);
+  protected readonly accountService = inject(AccountService);
   protected readonly alertEventService = inject(AlertEventService);
   // eslint-disable-next-line @typescript-eslint/member-ordering
   readonly isLoading = this.alertEventService.alertEventsResource.isLoading;
@@ -79,6 +83,10 @@ export class AlertEvent implements OnInit {
         tap(() => this.load()),
       )
       .subscribe();
+  }
+
+  acknowledge(alertEvent: IAlertEvent): void {
+    this.alertEventService.acknowledge(alertEvent.id).subscribe(() => this.load());
   }
 
   delete(alertEvent: IAlertEvent): void {
