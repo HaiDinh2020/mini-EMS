@@ -1,178 +1,151 @@
 # Current Task
 
-## Sprint hiện tại: Sprint 3 – Alert + Audit + WebSocket
+## Sprint hiện tại: Sprint 4 – Dashboard UI
 
-### Mục tiêu Sprint 3
-Triển khai Alert Engine (so ngưỡng → sinh AlertEvent, tự resolve), CRUD AlertRule có RBAC, AOP AuditLog ghi nhận mọi thao tác CRUD nghiệp vụ, và WebSocket STOMP để push realtime device-status / alert tới Dashboard.
+### Mục tiêu Sprint 4
+Xây dựng Dashboard Angular hiển thị tổng quan hệ thống realtime: summary card device online/offline/unknown, biểu đồ metric CPU/RAM/Disk theo thời gian, alert banner + badge đếm OPEN alerts qua WebSocket, trang Alert Event list/acknowledge, và trang Admin xem Audit Log với filter/pagination.
 
-**Tiền đề:** Sprint 2 đã xong (TCP reachability, SSH collector, parser CPU/RAM/Disk, `@Scheduled` mỗi 60s, lưu `MetricSample`, cập nhật `Device.status` + `lastCheckedAt`).
+**Tiền đề – Sprint 3 đã xong:**
+- `AlertRule` entity + `AlertRuleResource` với `@PreAuthorize` đúng RBAC
+- `AlertRuleRepository.findEnabledRulesForDevices(List<String> deviceIds)` (MongoDB `$or`)
+- `AlertRuleSeederMigration` (Mongock order 002): seed 3 rule CPU/RAM/Disk
+- Frontend `alert-rule` list: ẩn Create/Edit/Delete khi không có `ROLE_ADMIN`
+- `AlertEvaluatorService.evaluate(device, metricSample)`: tạo/update/resolve AlertEvent + broadcast `/topic/alerts`
+- `AlertEventRepository` với query `findByDeviceIdAndRuleIdAndStatus`, `findByDeviceIdAndStatus`, `countByStatusAndSeverity`
+- `DeviceCollectorService` gọi `alertEvaluatorService.evaluate()` sau mỗi vòng quét
+- `AlertEventResource`: GET list (filter status/severity/deviceId), GET detail, PUT acknowledge
+- `AuditAspect` (`@AfterReturning`): bắt `create*`/`update*`/`delete*` trong Device/AlertRule/Credential resource
+- `AuditLogResource` (`GET /api/admin/audit-logs`): pagination + filter, chỉ ADMIN
+- `WebsocketConfiguration` + `WebsocketSecurityConfiguration` (STOMP over SockJS)
+- `DeviceCollectorService` publish `/topic/device-status` sau mỗi cập nhật
+- `AlertEvaluatorService` publish `/topic/alerts` sau create/update/resolve
 
 ---
 
 ## TODO ngay (theo thứ tự)
 
-### 1. AlertRule – CRUD + RBAC
-Tham chiếu: `.ai/domain/alert.md`
+### 1. Dashboard – Summary Cards
+Tham chiếu: `.ai/frontend/dashboard.md`
 
 **Backend**
-- [x] Kiểm tra entity `AlertRule` đã đúng spec (`deviceId` nullable, `enabled`, `thresholdWarning`, `thresholdCritical`, `metricType`)
-- [x] `AlertRuleResource`: áp `@PreAuthorize` đúng spec
-  - GET (list, detail): `hasAnyAuthority('ROLE_ADMIN', 'ROLE_USER')`
-  - POST, PUT, DELETE: `hasAuthority('ROLE_ADMIN')`
-- [x] Repository: thêm query `findEnabledRulesForDevices(List<String> deviceIds)` (MongoDB `$or` query)
-- [x] Seed 3 `AlertRule` mặc định qua `AlertRuleSeederMigration` (Mongock order 002):
-  - CPU: warning 85%, critical 95%
-  - RAM: warning 80%, critical 90%
-  - Disk: warning 75%, critical 90%
-
-**Frontend**
-- [x] Trang `alert-rule` list: ẩn nút Create/Edit/Delete khi không có `ROLE_ADMIN` (`*jhiHasAnyAuthority`)
-- [x] Route guard: `new/edit` yêu cầu `['ROLE_ADMIN']`
-
-**Done khi:** Admin tạo/sửa/xóa AlertRule; User chỉ xem.
-
----
-
-### 2. Alert Engine – `AlertEvaluatorService`
-Tham chiếu: `.ai/domain/alert.md`
-
-**Backend**
-- [ ] Tạo `AlertEvaluatorService.evaluate(device, metricSample)`:
-  - Lấy danh sách `AlertRule` enabled cho device (device-specific + global)
-  - So sánh value với `thresholdCritical` → `thresholdWarning`
-  - Gọi `createOrUpdate(device, rule, severity, value)` hoặc `autoResolve(device, rule)`
-- [ ] `createOrUpdate` logic:
-  - Tìm `AlertEvent` đang OPEN theo `(deviceId, ruleId)`
-  - Nếu chưa có → tạo mới, set `status=OPEN`, `triggeredAt=now()`
-  - Nếu có, severity thay đổi → update severity
-  - Nếu có, severity giống → chỉ update `value` + `triggeredAt`
-  - Sau khi save → broadcast `/topic/alerts` qua `SimpMessagingTemplate`
-- [ ] `autoResolve` logic:
-  - Tìm `AlertEvent` OPEN theo `(deviceId, ruleId)` 
-  - Nếu tồn tại → set `status=RESOLVED`, `resolvedAt=now()`, save + broadcast
-- [ ] Thêm query trong `AlertEventRepository`:
-  ```java
-  Optional<AlertEvent> findByDeviceIdAndRuleIdAndStatus(String deviceId, String ruleId, AlertStatus status);
-  List<AlertEvent> findByDeviceIdAndStatus(String deviceId, AlertStatus status);
-  long countByStatusAndSeverity(AlertStatus status, Severity severity);
-  ```
-- [ ] `DeviceCollectorService` gọi `alertEvaluatorService.evaluate(device, metricSample)` sau khi lưu MetricSample
-
-**Test**
-- [ ] Unit test `AlertEvaluatorService`: value vượt critical → tạo AlertEvent CRITICAL; value giảm về bình thường → auto-resolve; severity đổi từ WARNING → CRITICAL → update đúng
-
-**Done khi:** Collector chạy, metric vượt ngưỡng → AlertEvent tự sinh; metric hạ xuống → tự resolve.
-
----
-
-### 3. AlertEvent – REST API + Acknowledge
-Tham chiếu: `.ai/domain/alert.md`
-
-**Backend**
-- [ ] `AlertEventResource`:
-  - `GET /api/alert-events`: filter theo `status`, `severity`, `deviceId` (dùng query params)
-  - `GET /api/alert-events/{id}`: chi tiết
-  - `PUT /api/alert-events/{id}/acknowledge`: chuyển `OPEN → ACKNOWLEDGED` (auth: USER)
-- [ ] `@PreAuthorize`:
-  - GET: `hasAnyAuthority('ROLE_ADMIN', 'ROLE_USER')`
-  - PUT acknowledge: `hasAnyAuthority('ROLE_ADMIN', 'ROLE_USER')`
-  - Không expose POST/DELETE (AlertEvent chỉ do engine sinh)
-- [ ] Payload WebSocket khi broadcast:
+- [x] Endpoint `GET /api/dashboard/summary`:
   ```json
   {
-    "type": "ALERT_EVENT",
-    "alertEventId": "...",
-    "deviceId": "...",
-    "deviceName": "...",
-    "metricType": "RAM",
-    "severity": "CRITICAL",
-    "value": 91.5,
-    "message": "RAM usage 91.5% exceeds critical threshold 90%",
-    "status": "OPEN",
-    "timestamp": "..."
+    "totalDevices": 5,
+    "online": 3,
+    "offline": 1,
+    "unknown": 1,
+    "openAlerts": 2,
+    "criticalAlerts": 1,
+    "warningAlerts": 1
   }
   ```
+  - Auth: `hasAnyAuthority('ROLE_ADMIN', 'ROLE_USER')`
+  - Tổng hợp từ `DeviceRepository.countByStatus(status)` + `AlertEventRepository.countByStatusAndSeverity(...)`
 
 **Frontend**
-- [ ] Trang `alert-event` list: hiển thị status badge (OPEN=đỏ, ACKNOWLEDGED=vàng, RESOLVED=xanh), filter theo status/severity
-- [ ] Nút "Acknowledge" trong list/detail (USER và ADMIN đều dùng được)
+- [x] Route `/dashboard` (lazy-loaded)
+- [x] Component `DashboardComponent` với 4 card:
+  - **Online** (xanh lá) – count devices ONLINE
+  - **Offline** (đỏ) – count devices OFFLINE
+  - **Unknown** (xám) – count devices UNKNOWN
+  - **Open Alerts** (cam) – count AlertEvent OPEN, chia WARNING / CRITICAL
+- [x] Subscribe WebSocket `/topic/device-status` → reload summary
+- [x] Subscribe WebSocket `/topic/alerts` → reload summary
+- [x] Unsubscribe khi rời trang
 
-**Done khi:** User thấy danh sách alert; bấm Acknowledge → badge chuyển màu tức thì.
-
----
-
-### 4. AOP AuditLog
-Tham chiếu: `.ai/domain/audit.md`
-
-**Backend**
-- [ ] Tạo `AuditAspect` (`@Aspect @Component`) trong `com.vht.ems.aop`:
-  - Pointcut bắt `create*`, `update*`, `delete*` trong `DeviceResource`, `AlertRuleResource`, `CredentialResource`
-  - Dùng `@AfterReturning` để lấy kết quả trả về
-  - Lấy `username` từ `SecurityUtils.getCurrentUserLogin()`
-  - Map method name → action (`CREATE` / `UPDATE` / `DELETE`)
-  - Build `detail` JSON ngắn từ args/result — **KHÔNG chứa** `encryptedSecret`, SSH private key, password plaintext
-  - Lưu `AuditLog` qua `AuditLogRepository`
-- [ ] `AuditLogResource` (chỉ ADMIN):
-  - `GET /api/admin/audit-logs`: pagination, filter `username`, `action`, `entityName`, `from`, `to` (dùng `MongoTemplate + Criteria`)
-  - Không expose PUT/DELETE (append-only)
-- [ ] `@PreAuthorize("hasAuthority('ROLE_ADMIN')")` cho toàn bộ `AuditLogResource`
-
-**Test**
-- [ ] Unit/integration test: gọi `POST /api/devices` → `audit_logs` có 1 document với `action=CREATE`, `entityName=Device`, đúng `username`
-- [ ] Xác nhận: gọi `POST /api/credentials` → `detail` KHÔNG chứa field secret
-
-**Done khi:** Mọi CRUD Device/Credential/AlertRule đều sinh AuditLog; Admin xem được qua API.
+**Done khi:** Mở Dashboard thấy đủ 4 card, số liệu đúng; khi collector chạy, card cập nhật không reload.
 
 ---
 
-### 5. WebSocket STOMP – topic nghiệp vụ
-Tham chiếu: `.ai/backend/websocket.md`
+### 2. Biểu đồ Metric – CPU / RAM / Disk theo thời gian
 
 **Backend**
-- [ ] Inject `SimpMessagingTemplate` vào `AlertEvaluatorService` và `DeviceCollectorService`
-- [ ] `DeviceCollectorService` publish `/topic/device-status` sau cập nhật:
-  ```json
-  { "deviceId": "...", "name": "node-amf", "status": "ONLINE", "lastCheckedAt": "..." }
-  ```
-- [ ] `AlertEvaluatorService` publish `/topic/alerts` sau create/update/resolve AlertEvent (payload theo spec trên)
-- [ ] **Không** gọi `SimpMessagingTemplate` từ Controller — chỉ gọi từ service layer
-- [ ] Không tạo topic riêng cho Credential / AuditLog
+- [x] Endpoint `GET /api/devices/{id}/metrics/history`:
+  - Query params: `from`, `to` (ISO-8601), `limit` (default 50)
+  - Trả về `List<MetricSampleDTO>` sắp xếp tăng dần theo `collectedAt`
+  - Auth: `hasAnyAuthority('ROLE_ADMIN', 'ROLE_USER')`
 
 **Frontend**
-- [ ] Service `WebsocketService` (hoặc tận dụng service JHipster có sẵn): subscribe `/topic/device-status` và `/topic/alerts` khi vào Dashboard
-- [ ] Unsubscribe khi rời trang (tránh memory leak)
-- [ ] Khi nhận message `/topic/device-status`: cập nhật status badge của device tương ứng trong danh sách (không reload trang)
-- [ ] Khi nhận message `/topic/alerts`: hiển thị toast/banner alert mới hoặc cập nhật badge số alert đang OPEN
+- [x] Cài thư viện biểu đồ: `chart.js` (dùng trực tiếp, tương thích Angular 21)
+- [x] Component `MetricChartComponent` (dùng lại được):
+  - Input: `deviceId`, `metricType` (CPU/RAM/DISK), timeRange toggle 1h/6h/24h
+  - Fetch `GET /api/metric-samples/devices/{id}/metrics/history` khi mount + khi timeRange thay đổi
+  - Line chart: trục X = HH:mm, trục Y = % usage
+  - Kẻ đường ngang threshold WARNING + CRITICAL nếu truyền vào
+- [x] Tích hợp 3 biểu đồ (CPU / RAM / Disk) vào trang `Device Detail`
 
-**Done khi:** Không cần reload, status device + alert cập nhật ngay khi collector chạy xong.
+**Done khi:** Mở trang Device Detail → thấy 3 chart CPU/RAM/Disk; đổi timeRange → chart cập nhật.
 
 ---
 
-### 6. Sprint 3 review checklist
-- [ ] `./mvnw test` pass (bao gồm unit test AlertEvaluatorService + AuditAspect)
-- [ ] Collector chạy → metric vượt ngưỡng → AlertEvent CRITICAL xuất hiện trong `GET /api/alert-events`
-- [ ] AlertEvent tự RESOLVED khi metric hạ về bình thường
-- [ ] User bấm Acknowledge → status chuyển đúng
-- [ ] CRUD Device/AlertRule/Credential → AuditLog có record tương ứng
-- [ ] `GET /api/admin/audit-logs?action=CREATE` → trả về đúng danh sách
-- [ ] WebSocket: mở Dashboard, collector chạy → status device cập nhật không reload
-- [ ] AuditLog: không lộ secret trong field `detail`
-- [ ] Swagger phản ánh đúng endpoint `/api/alert-rules`, `/api/alert-events`, `/api/admin/audit-logs`
+### 3. Alert Banner Realtime + Badge
+
+**Frontend**
+- [x] Service `AlertNotificationService`:
+  - Subscribe `/topic/alerts` (dùng lại `WebsocketService`)
+  - Giữ signal `toasts[]` chứa tối đa 5 alert gần nhất chưa dismiss
+- [x] Badge đỏ trên icon bell (NavBar) hiện số OPEN alerts; cập nhật ngay khi `/topic/alerts` push
+- [x] Badge count tổng hợp từ:
+  1. `GET /api/dashboard/summary` khi init (giá trị khởi tạo)
+  2. WebSocket push (delta realtime)
+
+**Done khi:** Có alert mới → toast hiện ngay, badge tăng; reload trang → badge đúng với DB.
+
+---
+
+### 4. Trang Alert Event List + Acknowledge
+
+**Frontend**
+- [x] Route `/alert-event` (đã có từ JHipster)
+- [x] `AlertEventListComponent` enhanced:
+  - Filter dropdown: status (OPEN/ACKNOWLEDGED/RESOLVED) + severity (CRITICAL/WARNING)
+  - Nút **Acknowledge** (chỉ hiện khi status = OPEN): update row ngay, không reload
+  - Realtime: WS `/topic/alerts` → cập nhật status/severity row tương ứng
+  - Phân trang (JHipster paginator)
+
+**Done khi:** User thấy danh sách alert; bấm Acknowledge → badge chuyển vàng tức thì; khi alert tự resolve → badge chuyển xanh qua WebSocket.
+
+---
+
+### 5. Trang Admin – Audit Log
+
+**Frontend**
+- [x] Route `/admin/audit-logs` (lazy-loaded, inherit ADMIN guard từ `/admin`)
+- [x] Component `AdminAuditLogs`:
+  - Fetch `GET /api/admin/audit-logs` với filter: `username`, `action`, `entityName`, `from`, `to`
+  - Hiển thị bảng: Timestamp, Username, Action badge (CREATE=xanh, UPDATE=vàng, DELETE=đỏ), Entity, Detail (expandable JSON)
+  - Phân trang server-side
+- [x] Link "Audit Logs" trong menu Admin (navbar)
+
+**Done khi:** Admin vào `/admin/audit-logs`, lọc theo `action=CREATE` → thấy danh sách đúng; User bị redirect (403 / route guard).
+
+---
+
+### 6. Sprint 4 review checklist
+- [ ] Dashboard load: 4 summary card hiển thị đúng số liệu từ DB
+- [ ] WebSocket: collector chạy → card Online/Offline cập nhật không reload
+- [ ] WebSocket: metric vượt ngưỡng → badge tăng
+- [ ] Chart CPU/RAM/Disk trên Device Detail hiển thị đúng dữ liệu lịch sử
+- [ ] Đổi timeRange (1h / 6h / 24h) → chart cập nhật đúng
+- [ ] Alert Event list: filter status/severity hoạt động; Acknowledge đổi badge ngay
+- [ ] Audit Log: Admin truy cập được; User bị chặn (route guard + 403)
+- [ ] Audit Log filter `username` + `action` + `from/to` hoạt động đúng
+- [ ] Không memory leak WebSocket (unsubscribe khi rời trang)
+- [ ] `./mvnw test` pass (không regression từ Sprint 3)
 
 ---
 
 ## Blocked / Cần quyết định
-- [ ] AlertEvent acknowledge: chỉ user tạo request hay bất kỳ USER/ADMIN? (đề xuất: bất kỳ USER/ADMIN)
-- [ ] Khi device bị DELETE, AlertEvent liên quan xử lý thế nào? (đề xuất: giữ nguyên, deviceId vẫn ghi lịch sử)
+- [x] Thư viện chart: **`ng2-charts`** (đã chọn, 2026-06-24)
+- [ ] Biểu đồ tổng hợp trên Dashboard (optional) – làm Sprint 4 hay để Sprint 5?
 
 ---
 
-## Upcoming (Sprint 4 – Dashboard UI)
-- Dashboard Angular: tổng số device online/offline/unknown
-- Biểu đồ metric CPU/RAM/Disk theo thời gian (Chart.js / ngx-charts)
-- Alert banner realtime + badge đếm OPEN alerts
-- Trang Admin xem Audit Log với filter/pagination
-- Trang Topology (nếu Sprint 5 chưa làm)
+## Upcoming (Sprint 5 – Bonus)
+- Topology view (vis-network / d3-force): node = device, link = TopologyLink, màu theo status
+- Prometheus + Grafana: scrape `/actuator/prometheus`, dashboard JVM + device metric
+- 5 container giả lập 5G Core (gNodeB, AMF, SMF, UPF, UDM) trong `docker-compose.yml`
 
 ---
 
@@ -188,5 +161,6 @@ Tham chiếu: `.ai/backend/websocket.md`
 | 2026-06-22 | Seed mechanism: `ApplicationRunner` (cách 2 trong `database/jdl.md`) |
 | 2026-06-22 | IP seed 5G nodes: subnet `172.28.0.0/24`, nodes `.11`–`.15` |
 | 2026-06-23 | Sprint 1 done: Device/Credential CRUD, Jasypt, @PreAuthorize, seed 5 node 5G Core |
-| 2026-06-23 | Sprint 2 done: TCP reachability, SSH collector (sshj), parser CPU/RAM/Disk, @Scheduled 60s, MetricSample time-series |
-| 2026-06-23 | Sprint 3 done: AlertRule RBAC + seed, AlertEvaluatorService, AlertEvent acknowledge, AuditAspect, WebSocket STOMP config |
+| 2026-06-24 | Sprint 2 done: `DeviceCollectorService` (sshj + TCP check + @Scheduled 60s + thread pool `collector-`), `MetricParser` (pure fn, 9 unit tests pass), `MetricSample.deviceId` indexed, jasypt-spring-boot-starter, endpoint `/api/devices/{id}/metrics` |
+| 2026-06-24 | Sprint 3 done: AlertRule RBAC + seed, AlertEvaluatorService (tạo/update/resolve AlertEvent + WS broadcast), AlertEventResource (GET list/detail/acknowledge), AuditAspect (AOP @AfterReturning), AuditLogResource (admin-only), WebSocket STOMP `/topic/device-status` + `/topic/alerts` |
+| 2026-06-24 | Sprint 4 done: DashboardResource `/api/dashboard/summary`, MetricHistory endpoint, DashboardComponent (4 cards + WS), MetricChartComponent (chart.js line chart, 1h/6h/24h), AlertNotificationService + bell badge, AlertEvent list (filter + WS realtime row update), AdminAuditLogs (/admin/audit-logs, filter+pagination), navbar Dashboard link + Audit Logs link |

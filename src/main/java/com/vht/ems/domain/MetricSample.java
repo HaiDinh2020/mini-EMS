@@ -6,6 +6,7 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.time.Instant;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
@@ -22,6 +23,10 @@ public class MetricSample implements Serializable {
 
     @Id
     private String id;
+
+    @Indexed
+    @Field("device_id")
+    private String deviceId;
 
     @Field("cpu_usage")
     private Double cpuUsage;
@@ -57,6 +62,19 @@ public class MetricSample implements Serializable {
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public String getDeviceId() {
+        return this.deviceId;
+    }
+
+    public MetricSample deviceId(String deviceId) {
+        this.setDeviceId(deviceId);
+        return this;
+    }
+
+    public void setDeviceId(String deviceId) {
+        this.deviceId = deviceId;
     }
 
     public Double getCpuUsage() {
@@ -161,6 +179,7 @@ public class MetricSample implements Serializable {
     public String toString() {
         return "MetricSample{" +
             "id=" + getId() +
+            ", deviceId='" + getDeviceId() + "'" +
             ", cpuUsage=" + getCpuUsage() +
             ", ramUsage=" + getRamUsage() +
             ", diskUsage=" + getDiskUsage() +

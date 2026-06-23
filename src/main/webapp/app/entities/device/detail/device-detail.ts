@@ -10,6 +10,7 @@ import { Alert } from 'app/shared/alert/alert';
 import { AlertError } from 'app/shared/alert/alert-error';
 import { FormatMediumDatetimePipe } from 'app/shared/date';
 import { TranslateDirective } from 'app/shared/language';
+import { MetricChartComponent } from 'app/shared/metric-chart/metric-chart';
 import { IDevice } from '../device.model';
 
 @Component({
@@ -25,6 +26,7 @@ import { IDevice } from '../device.model';
     RouterLink,
     FormatMediumDatetimePipe,
     HasAnyAuthorityDirective,
+    MetricChartComponent,
   ],
 })
 export class DeviceDetail {

@@ -1,6 +1,7 @@
 package com.vht.ems.repository;
 
 import com.vht.ems.domain.Device;
+import com.vht.ems.domain.enumeration.DeviceStatus;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
@@ -24,4 +25,8 @@ public interface DeviceRepository extends MongoRepository<Device, String> {
     Optional<Device> findOneWithEagerRelationships(String id);
 
     boolean existsByIpAddress(String ipAddress);
+
+    List<Device> findByMonitoringEnabledTrue();
+
+    long countByStatus(DeviceStatus status);
 }

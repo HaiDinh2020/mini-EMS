@@ -12,6 +12,7 @@ import org.mapstruct.*;
 @Mapper(componentModel = "spring")
 public interface MetricSampleMapper extends EntityMapper<MetricSampleDTO, MetricSample> {
     @Mapping(target = "device", source = "device", qualifiedByName = "deviceName")
+    @Mapping(target = "deviceId", source = "deviceId")
     MetricSampleDTO toDto(MetricSample s);
 
     @Named("deviceName")

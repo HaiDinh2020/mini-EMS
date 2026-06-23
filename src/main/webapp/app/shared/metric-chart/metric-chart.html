@@ -1,0 +1,34 @@
+<div class="metric-chart-container">
+  <div class="d-flex justify-content-between align-items-center mb-2">
+    <span class="fw-semibold text-muted small text-uppercase">{{ metricType }} Usage</span>
+    <div class="btn-group btn-group-sm" role="group">
+      <button
+        type="button"
+        class="btn btn-outline-secondary"
+        [class.active]="selectedRange === '1h'"
+        (click)="selectedRange = '1h'; onRangeChange()"
+      >
+        1h
+      </button>
+      <button
+        type="button"
+        class="btn btn-outline-secondary"
+        [class.active]="selectedRange === '6h'"
+        (click)="selectedRange = '6h'; onRangeChange()"
+      >
+        6h
+      </button>
+      <button
+        type="button"
+        class="btn btn-outline-secondary"
+        [class.active]="selectedRange === '24h'"
+        (click)="selectedRange = '24h'; onRangeChange()"
+      >
+        24h
+      </button>
+    </div>
+  </div>
+  <div class="chart-wrapper">
+    <canvas #chartCanvas></canvas>
+  </div>
+</div>

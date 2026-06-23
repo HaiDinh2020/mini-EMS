@@ -1,0 +1,124 @@
+<div class="container-fluid py-3">
+  <h2>
+    <fa-icon icon="clipboard-list" class="me-2" />
+    Audit Logs
+    <small class="text-muted fs-6 ms-2">Admin only – append-only</small>
+  </h2>
+  <hr />
+
+  <!-- Filter Bar -->
+  <div class="row g-2 mb-3 align-items-end">
+    <div class="col-sm-2">
+      <label class="form-label small mb-1">Username</label>
+      <input class="form-control form-control-sm" type="text" [(ngModel)]="filterUsername" placeholder="admin" />
+    </div>
+    <div class="col-sm-2">
+      <label class="form-label small mb-1">Action</label>
+      <select class="form-select form-select-sm" [(ngModel)]="filterAction">
+        <option value="">All</option>
+        <option value="CREATE">CREATE</option>
+        <option value="UPDATE">UPDATE</option>
+        <option value="DELETE">DELETE</option>
+      </select>
+    </div>
+    <div class="col-sm-2">
+      <label class="form-label small mb-1">Entity</label>
+      <select class="form-select form-select-sm" [(ngModel)]="filterEntityName">
+        <option value="">All</option>
+        <option value="Device">Device</option>
+        <option value="AlertRule">AlertRule</option>
+        <option value="Credential">Credential</option>
+      </select>
+    </div>
+    <div class="col-sm-2">
+      <label class="form-label small mb-1">From</label>
+      <input class="form-control form-control-sm" type="datetime-local" [(ngModel)]="filterFrom" />
+    </div>
+    <div class="col-sm-2">
+      <label class="form-label small mb-1">To</label>
+      <input class="form-control form-control-sm" type="datetime-local" [(ngModel)]="filterTo" />
+    </div>
+    <div class="col-sm-2 d-flex gap-1">
+      <button class="btn btn-primary btn-sm" (click)="applyFilter()" [disabled]="isLoading()"><fa-icon icon="search" /> Filter</button>
+      <button class="btn btn-outline-secondary btn-sm" (click)="clearFilter()">
+        <fa-icon icon="times" />
+      </button>
+    </div>
+  </div>
+
+  @if (isLoading()) {
+    <div class="text-center py-4">
+      <fa-icon icon="sync" animation="spin" size="2x" class="text-muted" />
+    </div>
+  } @else if (auditLogs().length === 0) {
+    <div class="alert alert-info">No audit logs found matching the criteria.</div>
+  } @else {
+    <div class="table-responsive">
+      <table class="table table-sm table-hover align-middle">
+        <thead class="table-dark">
+          <tr>
+            <th>Timestamp</th>
+            <th>Username</th>
+            <th>Action</th>
+            <th>Entity</th>
+            <th>Entity ID</th>
+            <th>Detail</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (log of auditLogs(); track log.id) {
+            <tr>
+              <td class="text-nowrap small">{{ log.timestamp | formatMediumDatetime }}</td>
+              <td>
+                <code class="small">{{ log.username }}</code>
+              </td>
+              <td>
+                <span
+                  class="badge"
+                  [class.bg-success]="log.action === 'CREATE'"
+                  [class.bg-warning]="log.action === 'UPDATE'"
+                  [class.text-dark]="log.action === 'UPDATE'"
+                  [class.bg-danger]="log.action === 'DELETE'"
+                >
+                  {{ log.action }}
+                </span>
+              </td>
+              <td>{{ log.entityName }}</td>
+              <td>
+                <code class="small">{{ log.entityId }}</code>
+              </td>
+              <td>
+                @if (log.detail) {
+                  <button class="btn btn-link btn-sm p-0" (click)="toggleExpand(log.id)">
+                    <fa-icon [icon]="expandedId === log.id ? 'chevron-up' : 'chevron-down'" />
+                    {{ expandedId === log.id ? 'Hide' : 'Show' }}
+                  </button>
+                  @if (expandedId === log.id) {
+                    <pre class="mt-1 mb-0 small bg-light p-2 rounded" style="max-height: 200px; overflow: auto">{{
+                      formatDetail(log.detail)
+                    }}</pre>
+                  }
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <div class="d-flex justify-content-center mt-3">
+      <jhi-item-count [params]="{ page: page, totalItems: totalItems(), itemsPerPage: itemsPerPage }" />
+    </div>
+    <div class="d-flex justify-content-center">
+      <ngb-pagination
+        [collectionSize]="totalItems()"
+        [page]="page"
+        [pageSize]="itemsPerPage"
+        [maxSize]="5"
+        [rotate]="true"
+        [boundaryLinks]="true"
+        (pageChange)="onPageChange($event)"
+      />
+    </div>
+  }
+</div>

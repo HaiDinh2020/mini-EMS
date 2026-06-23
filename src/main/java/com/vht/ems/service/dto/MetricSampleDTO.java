@@ -13,6 +13,8 @@ public class MetricSampleDTO implements Serializable {
 
     private String id;
 
+    private String deviceId;
+
     private Double cpuUsage;
 
     private Double ramUsage;
@@ -32,6 +34,14 @@ public class MetricSampleDTO implements Serializable {
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public String getDeviceId() {
+        return deviceId;
+    }
+
+    public void setDeviceId(String deviceId) {
+        this.deviceId = deviceId;
     }
 
     public Double getCpuUsage() {
@@ -108,6 +118,7 @@ public class MetricSampleDTO implements Serializable {
     public String toString() {
         return "MetricSampleDTO{" +
             "id='" + getId() + "'" +
+            ", deviceId='" + getDeviceId() + "'" +
             ", cpuUsage=" + getCpuUsage() +
             ", ramUsage=" + getRamUsage() +
             ", diskUsage=" + getDiskUsage() +

@@ -1,0 +1,83 @@
+<div class="container-fluid py-4">
+  <div class="row mb-4">
+    <div class="col-12">
+      <h2 class="fw-bold">
+        <fa-icon icon="tachometer-alt" class="me-2" />
+        Dashboard – EMS Overview
+      </h2>
+      <hr />
+    </div>
+  </div>
+
+  <!-- Summary Cards -->
+  <div class="row g-3 mb-4">
+    <!-- Online -->
+    <div class="col-6 col-md-3">
+      <div class="card border-0 shadow-sm h-100 text-white bg-success">
+        <div class="card-body d-flex flex-column align-items-center justify-content-center py-4">
+          <fa-icon icon="check-circle" size="2x" class="mb-2" />
+          <div class="fs-1 fw-bold">{{ summary().online }}</div>
+          <div class="small text-uppercase fw-semibold">Online</div>
+        </div>
+        <div class="card-footer text-center bg-success bg-opacity-75 small">Total: {{ summary().totalDevices }} devices</div>
+      </div>
+    </div>
+
+    <!-- Offline -->
+    <div class="col-6 col-md-3">
+      <div class="card border-0 shadow-sm h-100 text-white bg-danger">
+        <div class="card-body d-flex flex-column align-items-center justify-content-center py-4">
+          <fa-icon icon="times-circle" size="2x" class="mb-2" />
+          <div class="fs-1 fw-bold">{{ summary().offline }}</div>
+          <div class="small text-uppercase fw-semibold">Offline</div>
+        </div>
+        <div class="card-footer text-center bg-danger bg-opacity-75 small">Unknown: {{ summary().unknown }}</div>
+      </div>
+    </div>
+
+    <!-- Open Alerts -->
+    <div class="col-6 col-md-3">
+      <div class="card border-0 shadow-sm h-100 text-white bg-warning">
+        <div class="card-body d-flex flex-column align-items-center justify-content-center py-4">
+          <fa-icon icon="exclamation-triangle" size="2x" class="mb-2" />
+          <div class="fs-1 fw-bold">{{ summary().openAlerts }}</div>
+          <div class="small text-uppercase fw-semibold">Open Alerts</div>
+        </div>
+        <div class="card-footer text-center bg-warning bg-opacity-75 small">
+          Critical: {{ summary().criticalAlerts }} / Warning: {{ summary().warningAlerts }}
+        </div>
+      </div>
+    </div>
+
+    <!-- Unknown -->
+    <div class="col-6 col-md-3">
+      <div class="card border-0 shadow-sm h-100 text-white bg-secondary">
+        <div class="card-body d-flex flex-column align-items-center justify-content-center py-4">
+          <fa-icon icon="question-circle" size="2x" class="mb-2" />
+          <div class="fs-1 fw-bold">{{ summary().unknown }}</div>
+          <div class="small text-uppercase fw-semibold">Unknown</div>
+        </div>
+        <div class="card-footer text-center bg-secondary bg-opacity-75 small">Status not determined</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Navigation -->
+  <div class="row g-3">
+    <div class="col-12">
+      <h5 class="fw-semibold mb-3">Quick Navigation</h5>
+    </div>
+    <div class="col-6 col-md-2">
+      <a routerLink="/device" class="btn btn-outline-primary w-100"> <fa-icon icon="server" class="me-1" /> Devices </a>
+    </div>
+    <div class="col-6 col-md-2">
+      <a routerLink="/alert-event" class="btn btn-outline-warning w-100"> <fa-icon icon="bell" class="me-1" /> Alerts </a>
+    </div>
+    <div class="col-6 col-md-2">
+      <a routerLink="/alert-rule" class="btn btn-outline-info w-100"> <fa-icon icon="cog" class="me-1" /> Alert Rules </a>
+    </div>
+    <div class="col-6 col-md-2">
+      <a routerLink="/metric-sample" class="btn btn-outline-secondary w-100"> <fa-icon icon="chart-line" class="me-1" /> Metrics </a>
+    </div>
+  </div>
+</div>

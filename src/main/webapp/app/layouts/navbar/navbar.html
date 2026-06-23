@@ -28,6 +28,16 @@
           </a>
         </li>
         @if (account() !== null) {
+          <li class="nav-item" routerLinkActive="active">
+            <a class="nav-link" routerLink="/dashboard" (click)="collapseNavbar()">
+              <span>
+                <fa-icon icon="tachometer-alt" />
+                <span>Dashboard</span>
+              </span>
+            </a>
+          </li>
+        }
+        @if (account() !== null) {
           <li
             ngbDropdown
             class="nav-item dropdown pointer"
@@ -196,6 +206,12 @@
                 <span jhiTranslate="global.menu.admin.logs">Ghi logs</span>
               </a>
             </li>
+            <li>
+              <a class="dropdown-item" routerLink="/admin/audit-logs" routerLinkActive="active" (click)="collapseNavbar()">
+                <fa-icon icon="clipboard-list" [fixedWidth]="true" />
+                <span>Audit Logs</span>
+              </a>
+            </li>
             @if (openAPIEnabled()) {
               <li>
                 <a class="dropdown-item" routerLink="/admin/docs" routerLinkActive="active" (click)="collapseNavbar()">
@@ -227,6 +243,18 @@
                 </li>
               }
             </ul>
+          </li>
+        }
+        @if (account() !== null) {
+          <li class="nav-item">
+            <a class="nav-link position-relative" routerLink="/alert-event" (click)="collapseNavbar()" title="Open Alerts">
+              <fa-icon icon="bell" />
+              @if (alertNotification.openAlertCount() > 0) {
+                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                  {{ alertNotification.openAlertCount() > 99 ? '99+' : alertNotification.openAlertCount() }}
+                </span>
+              }
+            </a>
           </li>
         }
         <li

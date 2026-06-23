@@ -102,6 +102,35 @@
         <button type="button" [routerLink]="['/device', deviceRef.id, 'edit']" class="btn btn-primary" *jhiHasAnyAuthority="'ROLE_ADMIN'">
           <fa-icon icon="pencil-alt" />&nbsp;<span jhiTranslate="entity.action.edit">Sửa</span>
         </button>
+
+        <!-- Metric Charts -->
+        @if (deviceRef.monitoringEnabled && deviceRef.id) {
+          <hr class="mt-4" />
+          <h5 class="mt-3 mb-3"><fa-icon icon="chart-line" class="me-2" />Metric History</h5>
+          <div class="row g-3">
+            <div class="col-12 col-lg-4">
+              <div class="card shadow-sm">
+                <div class="card-body" style="height: 260px">
+                  <jhi-metric-chart [deviceId]="deviceRef.id" metricType="CPU" />
+                </div>
+              </div>
+            </div>
+            <div class="col-12 col-lg-4">
+              <div class="card shadow-sm">
+                <div class="card-body" style="height: 260px">
+                  <jhi-metric-chart [deviceId]="deviceRef.id" metricType="RAM" />
+                </div>
+              </div>
+            </div>
+            <div class="col-12 col-lg-4">
+              <div class="card shadow-sm">
+                <div class="card-body" style="height: 260px">
+                  <jhi-metric-chart [deviceId]="deviceRef.id" metricType="DISK" />
+                </div>
+              </div>
+            </div>
+          </div>
+        }
       </div>
     }
   </div>

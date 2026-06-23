@@ -1,5 +1,5 @@
 import { HttpHeaders } from '@angular/common/http';
-import { ChangeDetectionStrategy, Component, OnInit, effect, inject, signal, ChangeDetectorRef } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, effect, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Data, ParamMap, Router, RouterLink } from '@angular/router';
 
@@ -12,6 +12,7 @@ import { Subscription, combineLatest, filter, tap } from 'rxjs';
 import { DEFAULT_SORT_DATA, ITEM_DELETED_EVENT, SORT } from 'app/config/navigation.constants';
 import { ITEMS_PER_PAGE, PAGE_HEADER, TOTAL_COUNT_RESPONSE_HEADER } from 'app/config/pagination.constants';
 import { AccountService } from 'app/core/auth/account.service';
+import { WebsocketService } from 'app/core/websocket/websocket.service';
 import { Alert } from 'app/shared/alert/alert';
 import { AlertError } from 'app/shared/alert/alert-error';
 import HasAnyAuthorityDirective from 'app/shared/auth/has-any-authority.directive';
@@ -43,8 +44,9 @@ import { AlertEventService } from '../service/alert-event.service';
     HasAnyAuthorityDirective,
   ],
 })
-export class AlertEvent implements OnInit {
+export class AlertEvent implements OnInit, OnDestroy {
   subscription: Subscription | null = null;
+  wsSub: Subscription | null = null;
   readonly alertEvents = signal<IAlertEvent[]>([]);
 
   sortState = sortStateSignal({});
@@ -53,9 +55,14 @@ export class AlertEvent implements OnInit {
   readonly totalItems = signal(0);
   readonly page = signal(1);
 
+  // filter state
+  filterStatus = '';
+  filterSeverity = '';
+
   readonly router = inject(Router);
   protected readonly accountService = inject(AccountService);
   protected readonly alertEventService = inject(AlertEventService);
+  private readonly wsService = inject(WebsocketService);
   // eslint-disable-next-line @typescript-eslint/member-ordering
   readonly isLoading = this.alertEventService.alertEventsResource.isLoading;
   protected readonly activatedRoute = inject(ActivatedRoute);
@@ -83,16 +90,46 @@ export class AlertEvent implements OnInit {
         tap(() => this.load()),
       )
       .subscribe();
+
+    // Subscribe to WebSocket for realtime row updates
+    this.wsService.connect();
+    this.wsSub = this.wsService.alertEvents$.subscribe(msg => {
+      this.alertEvents.update(events =>
+        events.map(ev => {
+          if (ev.id === msg.alertEventId) {
+            return { ...ev, status: msg.status as any, severity: msg.severity as any };
+          }
+          return ev;
+        }),
+      );
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.subscription?.unsubscribe();
+    this.wsSub?.unsubscribe();
   }
 
   acknowledge(alertEvent: IAlertEvent): void {
-    this.alertEventService.acknowledge(alertEvent.id).subscribe(() => this.load());
+    this.alertEventService.acknowledge(alertEvent.id).subscribe(updated => {
+      this.alertEvents.update(events => events.map(ev => (ev.id === updated.id ? updated : ev)));
+    });
+  }
+
+  applyFilter(): void {
+    this.page.set(1);
+    this.load();
+  }
+
+  clearFilter(): void {
+    this.filterStatus = '';
+    this.filterSeverity = '';
+    this.applyFilter();
   }
 
   delete(alertEvent: IAlertEvent): void {
     const modalRef = this.modalService.open(AlertEventDeleteDialog, { size: 'lg', backdrop: 'static' });
     modalRef.componentInstance.alertEvent = alertEvent;
-    // unsubscribe not needed because closed completes on modal close
     modalRef.closed
       .pipe(
         filter(reason => reason === ITEM_DELETED_EVENT),
@@ -117,6 +154,8 @@ export class AlertEvent implements OnInit {
     const page = params.get(PAGE_HEADER);
     this.page.set(+(page ?? 1));
     this.sortState.set(this.sortService.parseSortParam(params.get(SORT) ?? data[DEFAULT_SORT_DATA]));
+    this.filterStatus = params.get('status') ?? '';
+    this.filterSeverity = params.get('severity') ?? '';
   }
 
   protected fillComponentAttributesFromResponseBody(data: IAlertEvent[]): IAlertEvent[] {
@@ -135,15 +174,27 @@ export class AlertEvent implements OnInit {
       eagerload: true,
       sort: this.sortService.buildSortParam(this.sortState()),
     };
+    if (this.filterStatus) {
+      queryObject['status.equals'] = this.filterStatus;
+    }
+    if (this.filterSeverity) {
+      queryObject['severity.equals'] = this.filterSeverity;
+    }
     this.alertEventService.alertEventsParams.set(queryObject);
   }
 
   protected handleNavigation(page: number, sortState: SortState): void {
-    const queryParamsObj = {
+    const queryParamsObj: any = {
       page,
       size: this.itemsPerPage(),
       sort: this.sortService.buildSortParam(sortState),
     };
+    if (this.filterStatus) {
+      queryParamsObj['status'] = this.filterStatus;
+    }
+    if (this.filterSeverity) {
+      queryParamsObj['severity'] = this.filterSeverity;
+    }
 
     this.router.navigate(['./'], {
       relativeTo: this.activatedRoute,

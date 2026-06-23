@@ -1,6 +1,7 @@
 package com.vht.ems.config;
 
 import java.util.concurrent.Executor;
+import java.util.concurrent.ThreadPoolExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.aop.interceptor.AsyncUncaughtExceptionHandler;
@@ -44,5 +45,23 @@ public class AsyncConfiguration implements AsyncConfigurer {
     @Override
     public AsyncUncaughtExceptionHandler getAsyncUncaughtExceptionHandler() {
         return new SimpleAsyncUncaughtExceptionHandler();
+    }
+
+    /**
+     * Dedicated thread pool for the device collector.
+     * Isolated from the default taskExecutor so a slow SSH session
+     * never starves general async tasks.
+     */
+    @Bean(name = "collectorExecutor")
+    public Executor collectorExecutor() {
+        LOG.debug("Creating Collector Task Executor");
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setCorePoolSize(5);
+        executor.setMaxPoolSize(10);
+        executor.setQueueCapacity(100);
+        executor.setThreadNamePrefix("collector-");
+        executor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
+        executor.initialize();
+        return executor;
     }
 }

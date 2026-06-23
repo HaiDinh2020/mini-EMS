@@ -10,6 +10,31 @@
     </div>
   </h2>
 
+  <!-- Filter Bar -->
+  <div class="row g-2 mb-3 align-items-end">
+    <div class="col-auto">
+      <label class="form-label small mb-1">Status</label>
+      <select class="form-select form-select-sm" [(ngModel)]="filterStatus">
+        <option value="">All</option>
+        <option value="OPEN">OPEN</option>
+        <option value="ACKNOWLEDGED">ACKNOWLEDGED</option>
+        <option value="RESOLVED">RESOLVED</option>
+      </select>
+    </div>
+    <div class="col-auto">
+      <label class="form-label small mb-1">Severity</label>
+      <select class="form-select form-select-sm" [(ngModel)]="filterSeverity">
+        <option value="">All</option>
+        <option value="CRITICAL">CRITICAL</option>
+        <option value="WARNING">WARNING</option>
+      </select>
+    </div>
+    <div class="col-auto">
+      <button class="btn btn-primary btn-sm me-1" (click)="applyFilter()"><fa-icon icon="search" /> Filter</button>
+      <button class="btn btn-outline-secondary btn-sm" (click)="clearFilter()"><fa-icon icon="times" /> Clear</button>
+    </div>
+  </div>
+
   <jhi-alert-error />
 
   <jhi-alert />

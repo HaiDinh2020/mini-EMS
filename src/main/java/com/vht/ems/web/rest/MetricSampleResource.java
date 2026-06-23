@@ -3,11 +3,14 @@ package com.vht.ems.web.rest;
 import com.vht.ems.repository.MetricSampleRepository;
 import com.vht.ems.service.MetricSampleService;
 import com.vht.ems.service.dto.MetricSampleDTO;
+import com.vht.ems.service.mapper.MetricSampleMapper;
 import com.vht.ems.web.rest.errors.BadRequestAlertException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -15,9 +18,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import tech.jhipster.web.util.HeaderUtil;
@@ -42,9 +48,16 @@ public class MetricSampleResource {
 
     private final MetricSampleRepository metricSampleRepository;
 
-    public MetricSampleResource(MetricSampleService metricSampleService, MetricSampleRepository metricSampleRepository) {
+    private final MetricSampleMapper metricSampleMapper;
+
+    public MetricSampleResource(
+        MetricSampleService metricSampleService,
+        MetricSampleRepository metricSampleRepository,
+        MetricSampleMapper metricSampleMapper
+    ) {
         this.metricSampleService = metricSampleService;
         this.metricSampleRepository = metricSampleRepository;
+        this.metricSampleMapper = metricSampleMapper;
     }
 
     /**
@@ -185,5 +198,64 @@ public class MetricSampleResource {
         return ResponseEntity.noContent()
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id))
             .build();
+    }
+
+    // ---- device-scoped metric endpoints ----
+
+    /**
+     * {@code GET  /devices/:deviceId/metrics} : paginated metric history for a device.
+     */
+    @GetMapping("/devices/{deviceId}/metrics")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_USER')")
+    public ResponseEntity<List<MetricSampleDTO>> getDeviceMetrics(
+        @PathVariable String deviceId,
+        @org.springdoc.core.annotations.ParameterObject Pageable pageable
+    ) {
+        LOG.debug("REST request to get metrics for device {}", deviceId);
+        Page<MetricSampleDTO> page = metricSampleRepository
+            .findByDeviceIdOrderByCollectedAtDesc(deviceId, pageable)
+            .map(metricSampleMapper::toDto);
+        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
+        return ResponseEntity.ok().headers(headers).body(page.getContent());
+    }
+
+    /**
+     * {@code GET  /devices/:deviceId/metrics/latest} : the most recent MetricSample for a device.
+     */
+    @GetMapping("/devices/{deviceId}/metrics/latest")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_USER')")
+    public ResponseEntity<MetricSampleDTO> getLatestDeviceMetric(@PathVariable String deviceId) {
+        LOG.debug("REST request to get latest metric for device {}", deviceId);
+        return ResponseUtil.wrapOrNotFound(
+            metricSampleRepository.findTopByDeviceIdOrderByCollectedAtDesc(deviceId).map(metricSampleMapper::toDto)
+        );
+    }
+
+    /**
+     * {@code GET  /devices/:deviceId/metrics/history} : time-range metric history for a device.
+     *
+     * @param deviceId  the device ID
+     * @param from      start of the time window (ISO-8601, default = now minus 1 hour)
+     * @param to        end of the time window   (ISO-8601, default = now)
+     * @param limit     max number of samples to return (default 50)
+     */
+    @GetMapping("/devices/{deviceId}/metrics/history")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_USER')")
+    public ResponseEntity<List<MetricSampleDTO>> getDeviceMetricHistory(
+        @PathVariable String deviceId,
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant from,
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant to,
+        @RequestParam(defaultValue = "50") int limit
+    ) {
+        LOG.debug("REST request to get metric history for device {}, from={}, to={}, limit={}", deviceId, from, to, limit);
+        Instant effectiveTo = (to != null) ? to : Instant.now();
+        Instant effectiveFrom = (from != null) ? from : effectiveTo.minus(1, ChronoUnit.HOURS);
+        List<MetricSampleDTO> result = metricSampleRepository
+            .findByDeviceIdAndCollectedAtBetweenOrderByCollectedAtAsc(deviceId, effectiveFrom, effectiveTo)
+            .stream()
+            .limit(Math.min(limit, 500))
+            .map(metricSampleMapper::toDto)
+            .toList();
+        return ResponseEntity.ok(result);
     }
 }
