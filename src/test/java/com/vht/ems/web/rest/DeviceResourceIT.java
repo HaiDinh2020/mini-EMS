@@ -313,35 +313,49 @@ class DeviceResourceIT {
     }
 
     @Test
-    void checkStatusIsRequired() throws Exception {
+    void createDeviceWithNullStatusGetsDefaultUnknown() throws Exception {
         long databaseSizeBeforeTest = getRepositoryCount();
-        // set the field null
         device.setStatus(null);
+        device.setIpAddress("10.1.0.1");
 
-        // Create the Device, which fails.
         DeviceDTO deviceDTO = deviceMapper.toDto(device);
 
-        restDeviceMockMvc
-            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(deviceDTO)))
-            .andExpect(status().isBadRequest());
+        var returnedDeviceDTO = om.readValue(
+            restDeviceMockMvc
+                .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(deviceDTO)))
+                .andExpect(status().isCreated())
+                .andReturn()
+                .getResponse()
+                .getContentAsString(),
+            DeviceDTO.class
+        );
 
-        assertSameRepositoryCount(databaseSizeBeforeTest);
+        assertThat(returnedDeviceDTO.getStatus()).isEqualTo(DeviceStatus.UNKNOWN);
+        assertIncrementedRepositoryCount(databaseSizeBeforeTest);
+        insertedDevice = deviceMapper.toEntity(returnedDeviceDTO);
     }
 
     @Test
-    void checkMonitoringEnabledIsRequired() throws Exception {
+    void createDeviceWithNullMonitoringEnabledGetsDefaultTrue() throws Exception {
         long databaseSizeBeforeTest = getRepositoryCount();
-        // set the field null
         device.setMonitoringEnabled(null);
+        device.setIpAddress("10.1.0.2");
 
-        // Create the Device, which fails.
         DeviceDTO deviceDTO = deviceMapper.toDto(device);
 
-        restDeviceMockMvc
-            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(deviceDTO)))
-            .andExpect(status().isBadRequest());
+        var returnedDeviceDTO = om.readValue(
+            restDeviceMockMvc
+                .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(deviceDTO)))
+                .andExpect(status().isCreated())
+                .andReturn()
+                .getResponse()
+                .getContentAsString(),
+            DeviceDTO.class
+        );
 
-        assertSameRepositoryCount(databaseSizeBeforeTest);
+        assertThat(returnedDeviceDTO.getMonitoringEnabled()).isTrue();
+        assertIncrementedRepositoryCount(databaseSizeBeforeTest);
+        insertedDevice = deviceMapper.toEntity(returnedDeviceDTO);
     }
 
     @Test

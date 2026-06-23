@@ -110,18 +110,24 @@ export class DeviceUpdate implements OnInit {
     this.device = device;
     this.deviceFormService.resetForm(this.editForm, device);
 
-    this.credentialsSharedCollection.update(credentials =>
-      this.credentialService.addCredentialToCollectionIfMissing<ICredential>(credentials, device.credential),
-    );
+    if (device.credentialId) {
+      this.credentialsSharedCollection.update(credentials =>
+        this.credentialService.addCredentialToCollectionIfMissing<ICredential>(credentials, { id: device.credentialId } as ICredential),
+      );
+    }
   }
 
   protected loadRelationshipsOptions(): void {
+    const currentCredentialId = this.device?.credentialId;
     this.credentialService
       .query()
       .pipe(map((res: HttpResponse<ICredential[]>) => res.body ?? []))
       .pipe(
         map((credentials: ICredential[]) =>
-          this.credentialService.addCredentialToCollectionIfMissing<ICredential>(credentials, this.device?.credential),
+          this.credentialService.addCredentialToCollectionIfMissing<ICredential>(
+            credentials,
+            currentCredentialId ? ({ id: currentCredentialId } as ICredential) : null,
+          ),
         ),
       )
       .subscribe((credentials: ICredential[]) => this.credentialsSharedCollection.set(credentials));

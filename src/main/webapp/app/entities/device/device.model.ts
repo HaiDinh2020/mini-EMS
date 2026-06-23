@@ -1,6 +1,5 @@
 import dayjs from 'dayjs/esm';
 
-import { ICredential } from 'app/entities/credential/credential.model';
 import { DeviceStatus } from 'app/entities/enumerations/device-status.model';
 import { DeviceType } from 'app/entities/enumerations/device-type.model';
 
@@ -19,7 +18,7 @@ export interface IDevice {
   lastCheckedAt?: dayjs.Dayjs | null;
   monitoringEnabled?: boolean | null;
   description?: string | null;
-  credential?: Pick<ICredential, 'id' | 'name'> | null;
+  credentialId?: string | null;
 }
 
 export type NewDevice = Omit<IDevice, 'id'> & { id: null };

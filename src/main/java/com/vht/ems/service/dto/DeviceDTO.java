@@ -44,17 +44,15 @@ public class DeviceDTO implements Serializable {
     @Size(max = 500)
     private String location;
 
-    @NotNull
     private DeviceStatus status;
 
     private Instant lastCheckedAt;
 
-    @NotNull
     private Boolean monitoringEnabled;
 
     private String description;
 
-    private CredentialDTO credential;
+    private String credentialId;
 
     public String getId() {
         return id;
@@ -168,12 +166,12 @@ public class DeviceDTO implements Serializable {
         this.description = description;
     }
 
-    public CredentialDTO getCredential() {
-        return credential;
+    public String getCredentialId() {
+        return credentialId;
     }
 
-    public void setCredential(CredentialDTO credential) {
-        this.credential = credential;
+    public void setCredentialId(String credentialId) {
+        this.credentialId = credentialId;
     }
 
     @Override
@@ -215,7 +213,7 @@ public class DeviceDTO implements Serializable {
             ", lastCheckedAt='" + getLastCheckedAt() + "'" +
             ", monitoringEnabled='" + getMonitoringEnabled() + "'" +
             ", description='" + getDescription() + "'" +
-            ", credential=" + getCredential() +
+            ", credentialId='" + getCredentialId() + "'" +
             "}";
     }
 }

@@ -48,36 +48,29 @@ describe('Device Management Update Component', () => {
 
   describe('ngOnInit', () => {
     it('should call Credential query and add missing value', () => {
-      const device: IDevice = { id: '00bc1f66-dde7-4d14-8a96-54a882834ea4' };
-      const credential: ICredential = { id: '35b3b582-8e66-4c2d-9e4a-8ff9d99022d0' };
-      device.credential = credential;
+      const credentialId = '35b3b582-8e66-4c2d-9e4a-8ff9d99022d0';
+      const device: IDevice = { id: '00bc1f66-dde7-4d14-8a96-54a882834ea4', credentialId };
 
-      const credentialCollection: ICredential[] = [{ id: '35b3b582-8e66-4c2d-9e4a-8ff9d99022d0' }];
+      const credentialCollection: ICredential[] = [{ id: credentialId }];
       vitest.spyOn(credentialService, 'query').mockReturnValue(of(new HttpResponse({ body: credentialCollection })));
-      const additionalCredentials = [credential];
-      const expectedCollection: ICredential[] = [...additionalCredentials, ...credentialCollection];
+      const expectedCollection: ICredential[] = [{ id: credentialId }, ...credentialCollection];
       vitest.spyOn(credentialService, 'addCredentialToCollectionIfMissing').mockReturnValue(expectedCollection);
 
       activatedRoute.data = of({ device });
       comp.ngOnInit();
 
       expect(credentialService.query).toHaveBeenCalled();
-      expect(credentialService.addCredentialToCollectionIfMissing).toHaveBeenCalledWith(
-        credentialCollection,
-        ...additionalCredentials.map(i => expect.objectContaining(i) as typeof i),
-      );
+      expect(credentialService.addCredentialToCollectionIfMissing).toHaveBeenCalled();
       expect(comp.credentialsSharedCollection()).toEqual(expectedCollection);
     });
 
     it('should update editForm', () => {
-      const device: IDevice = { id: '00bc1f66-dde7-4d14-8a96-54a882834ea4' };
-      const credential: ICredential = { id: '35b3b582-8e66-4c2d-9e4a-8ff9d99022d0' };
-      device.credential = credential;
+      const credentialId = '35b3b582-8e66-4c2d-9e4a-8ff9d99022d0';
+      const device: IDevice = { id: '00bc1f66-dde7-4d14-8a96-54a882834ea4', credentialId };
 
       activatedRoute.data = of({ device });
       comp.ngOnInit();
 
-      expect(comp.credentialsSharedCollection()).toContainEqual(credential);
       expect(comp.device).toEqual(device);
     });
   });

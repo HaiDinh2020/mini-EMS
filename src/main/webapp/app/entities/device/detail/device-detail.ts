@@ -4,6 +4,7 @@ import { RouterLink } from '@angular/router';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { TranslateModule } from '@ngx-translate/core';
 
+import HasAnyAuthorityDirective from 'app/shared/auth/has-any-authority.directive';
 import { DataUtils } from 'app/core/util/data-util.service';
 import { Alert } from 'app/shared/alert/alert';
 import { AlertError } from 'app/shared/alert/alert-error';
@@ -15,7 +16,16 @@ import { IDevice } from '../device.model';
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'jhi-device-detail',
   templateUrl: './device-detail.html',
-  imports: [FontAwesomeModule, Alert, AlertError, TranslateDirective, TranslateModule, RouterLink, FormatMediumDatetimePipe],
+  imports: [
+    FontAwesomeModule,
+    Alert,
+    AlertError,
+    TranslateDirective,
+    TranslateModule,
+    RouterLink,
+    FormatMediumDatetimePipe,
+    HasAnyAuthorityDirective,
+  ],
 })
 export class DeviceDetail {
   readonly device = input<IDevice | null>(null);

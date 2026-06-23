@@ -183,9 +183,9 @@
               <td>{{ device.monitoringEnabled }}</td>
               <td>{{ device.description }}</td>
               <td>
-                @if (device.credential) {
+                @if (device.credentialId) {
                   <div>
-                    <a [routerLink]="['/credential', device.credential.id, 'view']">{{ device.credential.id }}</a>
+                    <a [routerLink]="['/credential', device.credentialId, 'view']">{{ device.credentialId }}</a>
                   </div>
                 }
               </td>
@@ -196,12 +196,23 @@
                     <span class="d-none d-md-inline" jhiTranslate="entity.action.view">Xem</span>
                   </a>
 
-                  <a [routerLink]="['/device', device.id, 'edit']" class="btn btn-primary btn-sm" data-cy="entityEditButton" *jhiHasAnyAuthority="'ROLE_ADMIN'">
+                  <a
+                    [routerLink]="['/device', device.id, 'edit']"
+                    class="btn btn-primary btn-sm"
+                    data-cy="entityEditButton"
+                    *jhiHasAnyAuthority="'ROLE_ADMIN'"
+                  >
                     <fa-icon icon="pencil-alt" />
                     <span class="d-none d-md-inline" jhiTranslate="entity.action.edit">Sửa</span>
                   </a>
 
-                  <button type="submit" (click)="delete(device)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton" *jhiHasAnyAuthority="'ROLE_ADMIN'">
+                  <button
+                    type="submit"
+                    (click)="delete(device)"
+                    class="btn btn-danger btn-sm"
+                    data-cy="entityDeleteButton"
+                    *jhiHasAnyAuthority="'ROLE_ADMIN'"
+                  >
                     <fa-icon icon="times" />
                     <span class="d-none d-md-inline" jhiTranslate="entity.action.delete">Xóa</span>
                   </button>

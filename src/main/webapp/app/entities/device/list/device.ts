@@ -18,6 +18,7 @@ import { FormatMediumDatetimePipe } from 'app/shared/date';
 import { TranslateDirective } from 'app/shared/language';
 import { ItemCount } from 'app/shared/pagination';
 import { SortByDirective, SortDirective, SortService, type SortState, sortStateSignal } from 'app/shared/sort';
+import HasAnyAuthorityDirective from 'app/shared/auth/has-any-authority.directive';
 import { DeviceDeleteDialog } from '../delete/device-delete-dialog';
 import { IDevice } from '../device.model';
 import { DeviceService } from '../service/device.service';
@@ -39,6 +40,7 @@ import { DeviceService } from '../service/device.service';
     FormatMediumDatetimePipe,
     NgbPagination,
     ItemCount,
+    HasAnyAuthorityDirective,
   ],
 })
 export class Device implements OnInit {

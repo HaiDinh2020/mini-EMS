@@ -87,9 +87,9 @@
           </dd>
           <dt><span jhiTranslate="emsApp.device.credential">Credential</span></dt>
           <dd>
-            @if (device()!.credential) {
+            @if (deviceRef.credentialId) {
               <div>
-                <a [routerLink]="['/credential', device()!.credential?.id, 'view']">{{ deviceRef.credential?.id }}</a>
+                <a [routerLink]="['/credential', deviceRef.credentialId, 'view']">{{ deviceRef.credentialId }}</a>
               </div>
             }
           </dd>
