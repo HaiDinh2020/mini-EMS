@@ -45,11 +45,19 @@ export class WebsocketService implements OnDestroy {
     const wsUrl = this.applicationConfigService.getEndpointFor('websocket/tracker');
 
     this.stompClient = new Client({
-      webSocketFactory: () => new SockJS(wsUrl),
+      webSocketFactory: () => new SockJS(wsUrl, undefined, { transports: ['websocket'] }),
       connectHeaders: token ? { Authorization: `Bearer ${token}` } : {},
       reconnectDelay: 5000,
+      heartbeatIncoming: 10000,
+      heartbeatOutgoing: 10000,
       onConnect: () => {
         this.subscribeToTopics();
+      },
+      onStompError: frame => {
+        console.warn('STOMP error:', frame.headers['message'], frame.body);
+      },
+      onWebSocketError: event => {
+        console.warn('WebSocket error:', event);
       },
     });
     this.stompClient.activate();

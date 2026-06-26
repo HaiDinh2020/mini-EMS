@@ -6,6 +6,8 @@ import com.vht.ems.domain.MetricSample;
 import com.vht.ems.domain.enumeration.DeviceStatus;
 import com.vht.ems.repository.DeviceRepository;
 import com.vht.ems.repository.MetricSampleRepository;
+import com.vht.ems.service.AlertEvaluatorService;
+import com.vht.ems.service.DeviceStatusPublisher;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
@@ -33,6 +35,8 @@ public class DeviceCollectorService {
 
     private final DeviceRepository deviceRepository;
     private final MetricSampleRepository metricSampleRepository;
+    private final AlertEvaluatorService alertEvaluatorService;
+    private final DeviceStatusPublisher deviceStatusPublisher;
     private final StringEncryptor stringEncryptor;
     private final Executor collectorExecutor;
 
@@ -45,11 +49,15 @@ public class DeviceCollectorService {
     public DeviceCollectorService(
         DeviceRepository deviceRepository,
         MetricSampleRepository metricSampleRepository,
+        AlertEvaluatorService alertEvaluatorService,
+        DeviceStatusPublisher deviceStatusPublisher,
         StringEncryptor stringEncryptor,
         @Qualifier("collectorExecutor") Executor collectorExecutor
     ) {
         this.deviceRepository = deviceRepository;
         this.metricSampleRepository = metricSampleRepository;
+        this.alertEvaluatorService = alertEvaluatorService;
+        this.deviceStatusPublisher = deviceStatusPublisher;
         this.stringEncryptor = stringEncryptor;
         this.collectorExecutor = collectorExecutor;
     }
@@ -139,10 +147,11 @@ public class DeviceCollectorService {
                 .collectedAt(Instant.now());
 
             metricSampleRepository.save(sample);
+            alertEvaluatorService.evaluate(device, sample);
 
             device.setStatus(DeviceStatus.ONLINE);
             device.setLastCheckedAt(Instant.now());
-            deviceRepository.save(device);
+            saveDevice(device);
 
             LOG.debug("Collector: device {} — cpu={:.1f}% ram={:.1f}% disk={:.1f}%", device.getName(), cpu, ram, disk);
         } catch (InterruptedException e) {
@@ -180,7 +189,12 @@ public class DeviceCollectorService {
     private void updateDeviceStatus(Device device, DeviceStatus status) {
         device.setStatus(status);
         device.setLastCheckedAt(Instant.now());
+        saveDevice(device);
+    }
+
+    private void saveDevice(Device device) {
         deviceRepository.save(device);
+        deviceStatusPublisher.publishDeviceStatus(device);
     }
 
     private void saveOfflineMetric(Device device, double latencyMs) {
@@ -190,6 +204,7 @@ public class DeviceCollectorService {
             .pingLatencyMs(latencyMs)
             .collectedAt(Instant.now());
         metricSampleRepository.save(sample);
+        alertEvaluatorService.evaluate(device, sample);
     }
 
     /**
