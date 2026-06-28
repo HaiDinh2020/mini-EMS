@@ -38,6 +38,16 @@
           </li>
         }
         @if (account() !== null) {
+          <li class="nav-item" routerLinkActive="active">
+            <a class="nav-link" routerLink="/topology" (click)="collapseNavbar()">
+              <span>
+                <fa-icon icon="project-diagram" />
+                <span>Topology</span>
+              </span>
+            </a>
+          </li>
+        }
+        @if (account() !== null) {
           <li
             ngbDropdown
             class="nav-item dropdown pointer"

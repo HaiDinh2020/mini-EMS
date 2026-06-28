@@ -1,5 +1,13 @@
-# This configuration is intended for development purpose, it's **your** responsibility to harden it for production
+# All-in-one compose: EMS app + MongoDB + Prometheus + Grafana + 5G Core simulated nodes
 name: ems
+
+networks:
+  ems-net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.0.0/24
+
 services:
   app:
     image: ems
@@ -12,23 +20,102 @@ services:
       - JHIPSTER_CACHE_REDIS_CLUSTER=false
     ports:
       - 127.0.0.1:8080:8080
+    networks:
+      - ems-net
     healthcheck:
       test:
         - CMD-SHELL
-        - "bash -c 'exec 3<>/dev/tcp/127.0.0.1/8080; printf \"GET
-          /management/health HTTP/1.0\\r\\nHost: localhost\\r\\n\\r\\n\" >&3;
-          grep -q \"\\\"status\\\":\\\"UP\\\"\" <&3'"
+        - "bash -c 'exec 3<>/dev/tcp/127.0.0.1/8080; printf \"GET /management/health HTTP/1.0\\r\\nHost: localhost\\r\\n\\r\\n\" >&3; grep -q \"\\\"status\\\":\\\"UP\\\"\" <&3'"
       interval: 5s
       timeout: 5s
       retries: 40
     depends_on:
       mongodb:
         condition: service_healthy
+
   mongodb:
     extends:
       file: ./mongodb.yml
       service: mongodb
+    networks:
+      - ems-net
+
   redis:
     extends:
       file: ./redis.yml
       service: redis
+    networks:
+      - ems-net
+
+  # ── Monitoring ────────────────────────────────────────────────────────────────
+
+  prometheus:
+    image: prom/prometheus:v3.11.3
+    volumes:
+      - ./prometheus/:/etc/prometheus/
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    ports:
+      - 127.0.0.1:9090:9090
+    networks:
+      - ems-net
+    depends_on:
+      - app
+
+  grafana:
+    image: grafana/grafana:13.0.1
+    volumes:
+      - ./grafana/provisioning/:/etc/grafana/provisioning/
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+    ports:
+      - 127.0.0.1:3000:3000
+    networks:
+      - ems-net
+    depends_on:
+      - prometheus
+
+  # ── 5G Core Simulated Nodes ───────────────────────────────────────────────────
+  # Each node runs busybox nc in a loop, listening on TCP 2022.
+  # The collector uses TCP-only mode (no credential) and marks them ONLINE.
+
+  gnodeb:
+    image: alpine:3.20
+    command: ['sh', '-c', 'while true; do nc -l -p 2022 < /dev/null 2>/dev/null; sleep 0.1; done']
+    networks:
+      ems-net:
+        ipv4_address: 172.28.0.11
+    restart: unless-stopped
+
+  amf:
+    image: alpine:3.20
+    command: ['sh', '-c', 'while true; do nc -l -p 2022 < /dev/null 2>/dev/null; sleep 0.1; done']
+    networks:
+      ems-net:
+        ipv4_address: 172.28.0.12
+    restart: unless-stopped
+
+  smf:
+    image: alpine:3.20
+    command: ['sh', '-c', 'while true; do nc -l -p 2022 < /dev/null 2>/dev/null; sleep 0.1; done']
+    networks:
+      ems-net:
+        ipv4_address: 172.28.0.13
+    restart: unless-stopped
+
+  upf:
+    image: alpine:3.20
+    command: ['sh', '-c', 'while true; do nc -l -p 2022 < /dev/null 2>/dev/null; sleep 0.1; done']
+    networks:
+      ems-net:
+        ipv4_address: 172.28.0.14
+    restart: unless-stopped
+
+  udm:
+    image: alpine:3.20
+    command: ['sh', '-c', 'while true; do nc -l -p 2022 < /dev/null 2>/dev/null; sleep 0.1; done']
+    networks:
+      ems-net:
+        ipv4_address: 172.28.0.15
+    restart: unless-stopped

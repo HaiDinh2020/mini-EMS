@@ -1,6 +1,7 @@
 import {
   faArrowLeft,
   faAsterisk,
+  faProjectDiagram,
   faBan,
   faBars,
   faBell,
@@ -53,6 +54,7 @@ import {
 export const fontAwesomeIcons = [
   faArrowLeft,
   faAsterisk,
+  faProjectDiagram,
   faBan,
   faBars,
   faBell,

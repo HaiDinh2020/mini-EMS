@@ -8,6 +8,7 @@ import com.vht.ems.repository.DeviceRepository;
 import com.vht.ems.repository.MetricSampleRepository;
 import com.vht.ems.service.AlertEvaluatorService;
 import com.vht.ems.service.DeviceStatusPublisher;
+import io.micrometer.core.instrument.MeterRegistry;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
@@ -16,6 +17,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.common.IOUtils;
 import net.schmizz.sshj.connection.channel.direct.Session;
@@ -40,6 +42,9 @@ public class DeviceCollectorService {
     private final StringEncryptor stringEncryptor;
     private final Executor collectorExecutor;
 
+    private final AtomicLong onlineCount = new AtomicLong(0);
+    private final AtomicLong offlineCount = new AtomicLong(0);
+
     @Value("${ems.collector.tcp-timeout-ms:2000}")
     private int tcpTimeoutMs;
 
@@ -52,6 +57,7 @@ public class DeviceCollectorService {
         AlertEvaluatorService alertEvaluatorService,
         DeviceStatusPublisher deviceStatusPublisher,
         StringEncryptor stringEncryptor,
+        MeterRegistry meterRegistry,
         @Qualifier("collectorExecutor") Executor collectorExecutor
     ) {
         this.deviceRepository = deviceRepository;
@@ -60,6 +66,8 @@ public class DeviceCollectorService {
         this.deviceStatusPublisher = deviceStatusPublisher;
         this.stringEncryptor = stringEncryptor;
         this.collectorExecutor = collectorExecutor;
+        meterRegistry.gauge("ems.device.online.count", onlineCount, AtomicLong::doubleValue);
+        meterRegistry.gauge("ems.device.offline.count", offlineCount, AtomicLong::doubleValue);
     }
 
     @Scheduled(fixedDelayString = "${ems.collector.interval-ms:60000}")
@@ -78,6 +86,8 @@ public class DeviceCollectorService {
 
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
         LOG.info("Collector: scan complete");
+        onlineCount.set(deviceRepository.countByStatus(DeviceStatus.ONLINE));
+        offlineCount.set(deviceRepository.countByStatus(DeviceStatus.OFFLINE));
     }
 
     // --- per-device ---
@@ -104,8 +114,8 @@ public class DeviceCollectorService {
 
             Credential credential = device.getCredential();
             if (credential == null) {
-                LOG.warn("Collector: device {} has no credential, skipping SSH", device.getName());
-                updateDeviceStatus(device, DeviceStatus.UNKNOWN);
+                LOG.debug("Collector: device {} has no credential, TCP-reachable → ONLINE", device.getName());
+                updateDeviceStatus(device, DeviceStatus.ONLINE);
                 return;
             }
 

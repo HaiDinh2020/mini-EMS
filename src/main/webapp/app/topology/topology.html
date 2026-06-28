@@ -1,0 +1,39 @@
+<div class="container-fluid py-3">
+  <div class="d-flex align-items-center justify-content-between mb-3">
+    <h2 class="mb-0">
+      <fa-icon icon="project-diagram" class="me-2 text-primary" />
+      Network Topology
+    </h2>
+    <span class="text-muted small">Double-click a node to open Device Detail</span>
+  </div>
+
+  <div class="card shadow-sm">
+    <div class="card-body p-0 position-relative">
+      @if (loading) {
+        <div class="topology-overlay d-flex align-items-center justify-content-center">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+          <span class="ms-3 text-muted">Loading topology…</span>
+        </div>
+      }
+
+      @if (error) {
+        <div class="topology-overlay d-flex align-items-center justify-content-center">
+          <div class="alert alert-danger mb-0">
+            <fa-icon icon="exclamation-triangle" class="me-2" />
+            Failed to load topology data. Please refresh.
+          </div>
+        </div>
+      }
+
+      <div #networkContainer class="topology-canvas"></div>
+    </div>
+  </div>
+
+  <div class="d-flex gap-3 mt-2 ms-1">
+    <span class="badge-legend online">● ONLINE</span>
+    <span class="badge-legend offline">● OFFLINE</span>
+    <span class="badge-legend unknown">● UNKNOWN</span>
+  </div>
+</div>

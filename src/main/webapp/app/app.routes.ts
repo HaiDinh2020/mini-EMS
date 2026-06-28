@@ -19,6 +19,13 @@ const routes: Routes = [
     data: { authorities: [Authority.USER, Authority.ADMIN] },
   },
   {
+    path: 'topology',
+    loadComponent: () => import('./topology/topology'),
+    title: 'Network Topology',
+    canActivate: [UserRouteAccessService],
+    data: { authorities: [Authority.USER, Authority.ADMIN] },
+  },
+  {
     path: '',
     loadComponent: () => import('./layouts/navbar/navbar'),
     outlet: 'navbar',
